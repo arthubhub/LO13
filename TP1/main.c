@@ -68,13 +68,31 @@ void displayCamembert(){
 
 void displayTriangles(){
     glClear(GL_COLOR_BUFFER_BIT);
-    glBegin(GL_TRIANGLE);
-
-    glVertex2f(0,0);
+    glBegin(GL_TRIANGLES);
 
 
+    uint8_t points=60;
+    float rayon=1;
+    float x,y;
+    for (uint8_t i = 0 ; i<points ; i++){
+        //glColor3f(1-fabs(1-(float)i*2/points),0,fabs(1-(float)i*2/points));
+        glColor3f(cos(M_PI*(float)i/points),cos(2*M_PI/3+M_PI*(float)i/points),cos(4*M_PI/3+M_PI*(float)i/points));
+        glBegin(GL_TRIANGLES);
+        glVertex2f(0,0);
+        x = rayon * cos(i * (2* (float)M_PI) / points );
+        y = rayon * sin(i * (2* (float)M_PI) / points );
+        glVertex2f(x,y);
 
-    glEnd();
+        x = rayon * cos((i+1) * (2* (float)M_PI) / points );
+        y = rayon * sin((i+1) * (2* (float)M_PI) / points );
+        glVertex2f(x,y);
+        glEnd();
+
+    }
+
+
+
+
     glFlush();
 
 
@@ -100,7 +118,7 @@ int main(int argc, char **argv)
     glutInitWindowPosition(100,100);
     glutCreateWindow("LO13");
     init();
-    glutDisplayFunc(displayCamembert);
+    glutDisplayFunc(displayTriangles);
     glutMainLoop();
     
     return EXIT_SUCCESS;
