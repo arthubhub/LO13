@@ -1,22 +1,15 @@
-# Makefile for building the OpenGL project
-
-CC = gcc
-CFLAGS = -Wall -std=c99
-LDFLAGS = -lGL -lGLU -lglut
-
-# Source files
-SRCS = main.c global.c feature1.c
-OBJS = $(SRCS:.c=.o)
-TARGET = my_opengl_app
+CC      = gcc
+CFLAGS  = -Wall -Wextra -std=c99
+TARGET  = main
+OBJS    = main.o
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LDFLAGS)
+	$(CC) $(OBJS) -o $(TARGET)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+main.o: main.c GUI.h
+	$(CC) $(CFLAGS) -c main.c
 
 clean:
 	rm -f $(OBJS) $(TARGET)
-
