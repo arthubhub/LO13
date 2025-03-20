@@ -81,7 +81,6 @@ void displayTriangles(){
         // G : a = (2PI/3 + (i/points) * 2PI)
         // B : a = (4PI/3 + (i/points) * 2PI)
         // -> signal d'amplitude 0.5 centré en 0.5
-
         glColor3f(0.5 + 0.5*cos(2*M_PI*i/points),0.5 + 0.5 * cos(2 * M_PI * i / points + 2.0*M_PI/3.0), 0.5 + 0.5 * cos(2 * M_PI * i / points + 4.0*M_PI/3.0) );        
         glBegin(GL_TRIANGLES);
         glVertex2f(0,0);
