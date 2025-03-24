@@ -4,29 +4,73 @@
 #include <stdint.h>
 #include <math.h>
 
-typedef struct s_mesh {
+typedef struct s_mesh { // 5.2 Projection and view matrices
     uint32_t nVertices, nTriangles;
     float vertices[8][3]; // 8 sommets définis sur 3 coordonnées
     uint32_t triangles[12][3]; // 12 triangles de 3 sommets
-} Square;
+} Cube;
+
+Cube MY_CUBE;
 
 
-void definePoint(float *points_location, float coordinates[3] ){
-    points_location[0]=coordinates[0];
-    points_location[1]=coordinates[1];
-    points_location[2]=coordinates[2];
+typedef struct { // 5.2 Projection and view matrices
+    double ox, oy, oz; // Position de la caméra
+    double fx, fy, fz; // Focus
+    double vx, vy, vz; // Up vector
+} ViewMatrix;
+typedef struct { // 5.2 Projection and view matrices
+    double left, right;
+    double bottom, top;
+    double nearVal, farVal;
+} ProjectionMatrix;
+
+
+ViewMatrix getDefaultCamera() { // 5.2 Projection and view matrices
+    ViewMatrix cam = { // utilisation de la syntaxe c99
+        .ox = 2, .oy = 2, .oz = 2,    // Position de la caméra
+        .fx = 0, .fy = 0, .fz = 0,    // Cible 
+        .vx = 0, .vy = 1, .vz = 0     // "Up" vector
+    };
+    return cam;
 }
-void defineTriangle(float *triangle_location,uint8_t index0,uint8_t index1,uint8_t index2){
-    triangle_location[0]=(uint32_t)index0;
-    triangle_location[1]=(uint32_t)index1;
-    triangle_location[2]=(uint32_t)index2;
-
+ProjectionMatrix getDefaultProjection() { // 5.2 Projection and view matrices
+    ProjectionMatrix proj = {
+        .left = -1.0, .right = 1.0,
+        .bottom = -1.0, .top = 1.0,
+        .nearVal = 1.0, .farVal = 10.0
+    };
+    return proj;
 }
 
-void initCube(Square *s_struct){
 
-    s_struct -> nVertices = 8;
-    s_struct -> nTriangles = 12;
+
+void viewMatrix(){ // 5.2 Projection and view matrices
+    ViewMatrix camera = getDefaultCamera();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(
+        camera.ox, camera.oy, camera.oz,
+        camera.fx, camera.fy, camera.fz,
+        camera.vx, camera.vy, camera.vz
+    );
+}
+void projectionMatrix(){ // 5.2 Projection and view matrices
+    ProjectionMatrix projection = getDefaultProjection();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(
+        projection.left, projection.right,
+        projection.bottom, projection.top,
+        projection.nearVal, projection.farVal
+    );
+}
+
+
+
+void initCube(){
+
+    MY_CUBE.nVertices = 8;
+    MY_CUBE.nTriangles = 12;
 /* Merci ChatGPT
  A = {0,0,0}
     E--------F
@@ -37,110 +81,93 @@ void initCube(Square *s_struct){
    |/       |/
    D--------C
 */
-//  type  array = {x,y,z}; -> Attention, ce n'est pas une bonne pratique de définir les variables comme ca ^^
-    float A[]   = {0,0,0}; // -> offset = 0
-    uint8_t A_id=0;
-    float B[]   = {0,1,0}; // -> offset = 3
-    uint8_t B_id=1;
-    float C[]   = {1,1,0}; // -> offset = 6
-    uint8_t C_id=2;
-    float D[]   = {1,0,0}; // -> offset = 9
-    uint8_t D_id=3;
-    float E[]   = {0,0,1}; // -> offset = 12
-    uint8_t E_id=4;
-    float F[]   = {0,1,1}; // -> offset = 15
-    uint8_t F_id=5;
-    float G[]   = {1,1,1}; // -> offset = 18
-    uint8_t G_id=6;
-    float H[]   = {1,0,1}; // -> offset = 21
-    uint8_t H_id=7;
 
-    // sommets :
+    // On peut faire ca comme ca pour cette fois car le cube n'a que 8 coins
+    // En général, on évitera de stocker des grands tableaux dans la stack
+    // 8 points * 3 dimensions
+    float points[] = {
+        0, 0, 0, // A (0)
+        0, 1, 0, // B (1)
+        1, 1, 0, // C (2)
+        1, 0, 0, // D (3)
+        0, 0, 1, // E (4)
+        0, 1, 1, // F (5)
+        1, 1, 1, // G (6)
+        1, 0, 1  // H (7)
+    };
+    for (uint8_t i = 0; i < 8; i++) {
+        MY_CUBE.vertices[i][0] = points[i * 3 + 0];
+        MY_CUBE.vertices[i][1] = points[i * 3 + 1];
+        MY_CUBE.vertices[i][2] = points[i * 3 + 2];
+    }
 
-    uint8_t offset = 0;
-    definePoint(&s_struct->vertices[offset * 3],A);
-    offset++;
-    definePoint(&s_struct->vertices[offset * 3],B);
-    offset++;
-    definePoint(&s_struct->vertices[offset * 3],C);
-    offset++;
-    definePoint(&s_struct->vertices[offset * 3],D);
-    offset++;
-    definePoint(&s_struct->vertices[offset * 3],E);
-    offset++;
-    definePoint(&s_struct->vertices[offset * 3],F);
-    offset++;
-    definePoint(&s_struct->vertices[offset * 3],G);
-    offset++;
-    definePoint(&s_struct->vertices[offset * 3],H);
-
-    // Triangles :
-    offset=0;
-    defineTriangle(&s_struct->triangles[offset*3],A_id,B_id,C_id);
-    offset++;
-    defineTriangle(&s_struct->triangles[offset*3],C_id,D_id,A_id);
-    offset++;
-
-    defineTriangle(&s_struct->triangles[offset*3],D_id,H_id,C_id);
-    offset++;
-    defineTriangle(&s_struct->triangles[offset*3],H_id,G_id,C_id);
-
-    offset++;
-    defineTriangle(&s_struct->triangles[offset*3],B_id,C_id,G_id);
-    offset++;
-    defineTriangle(&s_struct->triangles[offset*3],G_id,F_id,B_id);
-
-    offset++;
-    defineTriangle(&s_struct->triangles[offset*3],E_id,F_id,G_id);
-    offset++;
-    defineTriangle(&s_struct->triangles[offset*3],G_id,H_id,E_id);
-
-    offset++;
-    defineTriangle(&s_struct->triangles[offset*3],A_id,D_id,H_id);
-    offset++;
-    defineTriangle(&s_struct->triangles[offset*3],H_id,E_id,A_id);
-
-    offset++;
-    defineTriangle(&s_struct->triangles[offset*3],A_id,B_id,F_id);
-    offset++;
-    defineTriangle(&s_struct->triangles[offset*3],F_id,E_id,A_id);
-
-
-
-
+    // 12 triangles * 3 indices
+    uint32_t triangles[] = {
+        0, 1, 2,  // face avant
+        2, 3, 0,
+        3, 7, 2,  // face droite
+        7, 6, 2,
+        1, 2, 6,  // face haut
+        6, 5, 1,
+        4, 5, 6,  // face arrière
+        6, 7, 4,
+        0, 3, 7,  // face bas
+        7, 4, 0,
+        0, 1, 5,  // face gauche
+        5, 4, 0
+    };
+    for (int i = 0; i < 12; i++) {
+        MY_CUBE.triangles[i][0] = triangles[i * 3 + 0];
+        MY_CUBE.triangles[i][1] = triangles[i * 3 + 1];
+        MY_CUBE.triangles[i][2] = triangles[i * 3 + 2];
+    }
 }
 
 
-void displaySquare(void){
-    glClear(GL_COLOR_BUFFER_BIT);
-    glBegin(GL_POLYGON);
-        glVertex2f(-0.5,-0.5);
-        glVertex2f(0.5,-0.5);
-        glVertex2f(0.5,0.5);
-        glVertex2f(-0.5,0.5);
-    glEnd();
-    glFlush();
+void displayCube(){
+    glClear(GL_COLOR_BUFFER_BIT);  // Clear the screen
+
+    glColor3f(1, 0.5, 0.5);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // Draw only lines (wireframe)
+    // For each Triangle
+    for (uint8_t triangle = 0; triangle < MY_CUBE.nTriangles; triangle++) {
+        glBegin(GL_TRIANGLES);
+        // For each point of the Triangle
+        for (uint8_t point_index = 0; point_index < 3; point_index++) {
+            uint32_t vertex_index = MY_CUBE.triangles[triangle][point_index];
+            float x = MY_CUBE.vertices[vertex_index][0];
+            float y = MY_CUBE.vertices[vertex_index][1];
+            float z = MY_CUBE.vertices[vertex_index][2];
+            printf("Plotting point %d of triangle %d at (%f, %f, %f)...\n",
+                   vertex_index, triangle, x, y, z);
+            glVertex3f(x, y, z);
+        }
+        glEnd();
+    }
+    glFlush();  
 }
 
-void init(){
-    glClearColor(0.0,0.0,0.0,0.0);
-    glColor3f(1.0,1.0,1.0);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluOrtho2D(-1.0,1.0,-1.0,1.0);
+
+void initColors() {
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glColor3f(0.0, 0.0, 0.0);
 }
 
-
-int main(int argc, char **argv)
-{
+void initOpengGL(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-    glutInitWindowSize(500,500);
-    glutInitWindowPosition(100,100);
-    glutCreateWindow("LO13");
-    init();
-    glutDisplayFunc(displaySquare);
+    glutInitWindowSize(1000, 1000);
+    glutInitWindowPosition(10, 10);
+    glutCreateWindow("TPGL");
+    glutDisplayFunc(displayCube);
+}
+
+int main(int argc, char **argv) {
+    initOpengGL(argc, argv);
+    initCube();
+    initColors();
+    viewMatrix();
+    projectionMatrix();
     glutMainLoop();
-    
     return EXIT_SUCCESS;
 }
