@@ -17,11 +17,72 @@ typedef struct mesh{
 
 } Mesh ;
 
+typedef struct opengl {
+
+    /* window */
+    uint16_t winSizeX, winSizeY;
+    uint16_t winPosX, winPosY;
+
+
+    /* repere de vue */
+    float obsX, obsY, obsZ;
+    float focalX, focalY, focalZ;
+    float vertX, vertY, vertZ;
+
+    /* couleurs */
+    float bgColorR, bgColorG, bgColorB;
+    float penColorR, penColorG, penColorB;
+
+    /* perspective de projection */
+    float Umin, Umax;
+    float Vmin, Vmax;
+    float Dmin, Dmax;
+
+
+} Opengl;
+
 
 /* Variables globales */
 Mesh msh;
+Opengl ogl;
+
+/* niveau 3 */
+
+void TracerObjet(void){
+    uint16_t i,j,k,virt_base,real_base;
+    
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glBegin(GL_TRIANGLES);
+    for (i=0; i < msh.nb_triangles; i++){
+        k = 3*i;
+        for (j=0; j < 3; j++){
+            virt_base = msh.triangles[k + j];
+            real_base = 3 * virt_base;  // Pas de "-1", indexation à partir de 0
+            glVertex3f(msh.vertices[real_base],     // x
+                       msh.vertices[real_base + 1], // y
+                       msh.vertices[real_base + 2]  // z
+            );
+        }
+    }
+    glEnd();
+}
+void EffacerEcran(void){
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+void MatriceVue(void){
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(ogl.obsX,ogl.obsY,ogl.obsZ,
+        ogl.focalX,ogl.focalY,ogl.focalZ,  
+        ogl.vertX,ogl.vertY,ogl.vertZ
+    ); 
+}
+void ViderMemoireEcran(void){
+    glFlush();
+}
 
 
+/* niveau 2 */
 
 void defineCube(void){
     uint8_t i;
@@ -132,19 +193,94 @@ void defineCube(void){
     msh.triangles[i*3 + 1]=4;
     msh.triangles[i*3 + 2]=5;
 }
+void MatriceProjection(void){
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustum(ogl.Umin,ogl.Umax,ogl.Vmin, ogl.Vmax,ogl.Dmin,ogl.Dmax);
+}
+void Display(void){
+    EffacerEcran();
+    MatriceVue(); // -> matricemode modelview , identité, lookat()
+    TracerObjet(); // -> tracer les triangles
+    ViderMemoireEcran(); // -> glflush 
+
+}
+
+/* niveau 1 */
+void InitialiserLibrairieGraphique(int *argc, char **argv){
+    glutInit(argc,argv);
+}
+void InitialiserParametresGraphiques(void){
+    /* fenetre */
+    ogl.winSizeX=700;
+    ogl.winSizeY=700;
+
+    ogl.winPosX=100;
+    ogl.winPosY=100;
+
+    /* repere de vue */
+    ogl.obsX = 3;
+    ogl.obsY = 2;
+    ogl.obsZ = 2;
+
+    ogl.focalX=0.5;
+    ogl.focalY=0.5;
+    ogl.focalZ=0.5;
+
+    ogl.vertX=0.0;
+    ogl.vertY=1.0;
+    ogl.vertZ=0.0;
+
+    /*couleurs*/
+    ogl.bgColorB=1.0;
+    ogl.bgColorG=1.0;
+    ogl.bgColorR=1.0;
+
+    ogl.penColorR=0.0;
+    ogl.penColorG=0.0;
+    ogl.penColorB=0.0;
+
+    /* perpective de projection*/
+    ogl.Umin = -3;
+    ogl.Umax = 3;
+    ogl.Vmin = -3;
+    ogl.Vmax = 3;
+    ogl.Dmin = 1;
+    ogl.Dmax = 10;
 
 
+}
+void ModeleDiscret(void){
+    defineCube();
+}
+void CreationFenetreGraphique(void){
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(ogl.winSizeX,ogl.winSizeY);
+    glutInitWindowPosition(ogl.winPosX, ogl.winPosY);
+    glutCreateWindow("LO13 - Arthur");
+}
+void InitialiserEnvironnementGraphique(void){
+    /* Couleur de fond */
+    glClearColor(ogl.bgColorR,ogl.bgColorG,ogl.bgColorB,0.0);
+    /* couleur courante*/
+    glColor3f(ogl.penColorR,ogl.penColorG,ogl.penColorB);
+    MatriceProjection();
+}
+void EvenementsGraphiques(void){
+    glutDisplayFunc(Display);
+}
+void BoucleInfinie(){
+    glutMainLoop();
+}
 
-
-
-int main(int argc, uint8_t **argv){
+int main(int argc, char **argv){
     InitialiserLibrairieGraphique(&argc,argv); // -> glutInit
-    InitialiserParametresGraphiques();
-    ModeleDiscret();
-    CreationFenetreGraphique();
+    InitialiserParametresGraphiques(); // -> variables de opengl
+    ModeleDiscret(); // -> remplir le cube  
+    CreationFenetreGraphique(); // créer la fenetre avec les parametres configurés précédemment
+    InitialiserEnvironnementGraphique();
     EvenementsGraphiques();
     BoucleInfinie();
     
-
     return 1;
 }
