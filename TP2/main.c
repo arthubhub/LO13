@@ -7,6 +7,8 @@
 #define NB_VERTICES_CUBE 8
 #define NB_TRIANGLES_CUBE 12
 
+#define FZOOM 0.99
+
 /* Structures */
 typedef struct mesh{
     uint8_t    nb_vertices;
@@ -37,6 +39,10 @@ typedef struct opengl {
     float Umin, Umax;
     float Vmin, Vmax;
     float Dmin, Dmax;
+
+    /* reshape */
+    float fu, fv;
+    float fzoom;
 
 
 } Opengl;
@@ -196,13 +202,46 @@ void defineCube(void){
 void MatriceProjection(void){
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(ogl.Umin,ogl.Umax,ogl.Vmin, ogl.Vmax,ogl.Dmin,ogl.Dmax);
+    glFrustum(ogl.Umin * ogl.fu * ogl.fzoom ,ogl.Umax * ogl.fu * ogl.fzoom,ogl.Vmin * ogl.fv * ogl.fzoom, ogl.Vmax * ogl.fv * ogl.fzoom,ogl.Dmin,ogl.Dmax);
 }
 void Display(void){
     EffacerEcran();
     MatriceVue(); // -> matricemode modelview , identité, lookat()
     TracerObjet(); // -> tracer les triangles
     ViderMemoireEcran(); // -> glflush 
+
+}
+void Reshape(int w, int h){
+    if (w>h){
+
+        ogl.fu = (float)w/h;
+        ogl.fv = 1.0 ;
+
+    }
+    else {
+        ogl.fv = (float)h/w;
+        ogl.fu = 1.0 ; 
+    }
+    MatriceProjection();
+    glViewport(0,0,w,h);
+
+}
+void Keyboard(unsigned char key, int x, int y){
+    switch (key) {
+        case 'q':
+        case 'Q':
+        case 27:
+            exit(0);
+            break;
+        case 'z':
+            ogl.fzoom*=FZOOM;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        default:
+            break;
+    }
+
 
 }
 
@@ -219,9 +258,9 @@ void InitialiserParametresGraphiques(void){
     ogl.winPosY=100;
 
     /* repere de vue */
-    ogl.obsX = 3;
-    ogl.obsY = 2;
-    ogl.obsZ = 2;
+    ogl.obsX = 2.0;
+    ogl.obsY = 1.6;
+    ogl.obsZ = 1.4;
 
     ogl.focalX=0.5;
     ogl.focalY=0.5;
@@ -241,13 +280,18 @@ void InitialiserParametresGraphiques(void){
     ogl.penColorB=0.0;
 
     /* perpective de projection*/
-    ogl.Umin = -3;
-    ogl.Umax = 3;
-    ogl.Vmin = -3;
-    ogl.Vmax = 3;
+    ogl.Umin = -0.5;
+    ogl.Umax = 0.5;
+    ogl.Vmin = -0.5;
+    ogl.Vmax = 0.5;
     ogl.Dmin = 1;
     ogl.Dmax = 10;
 
+    /* zoom */
+
+    ogl.fu = 1.0;
+    ogl.fv = 1.0;
+    ogl.fzoom = 1.0;
 
 }
 void ModeleDiscret(void){
@@ -268,6 +312,8 @@ void InitialiserEnvironnementGraphique(void){
 }
 void EvenementsGraphiques(void){
     glutDisplayFunc(Display);
+    glutReshapeFunc(Reshape);
+    glutKeyboardFunc(Keyboard);
 }
 void BoucleInfinie(){
     glutMainLoop();
