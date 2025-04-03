@@ -7,9 +7,9 @@
 #define NB_VERTICES_CUBE 8
 #define NB_TRIANGLES_CUBE 12
 
-#define FZOOM 0.995
+#define FZOOM 0.9
 
-#define ROTATION_SENSIBILITY 0.1
+#define ROTATION_SENSIBILITY 0.2
 
 #define TRANSLATION_STATE 1
 #define ROTATION_STATE 2
@@ -57,6 +57,7 @@ typedef struct opengl {
     float * geometricTransformations; // Do not allocate memory directly in stack
     uint8_t flagTransformation;
     float focal_u, focal_v, focal_n;
+    float trans_u, trans_v;
 
 
 } Opengl;
@@ -71,17 +72,33 @@ Opengl ogl;
 /* niveau 4 */
 
 void computeLastTransformation(){
-    // On évalue 
+    // On évalue la rotation
     switch ((ogl.flagTransformation & ROTATION_STATE) >> 0x1)
     {
     case 0x1: // On fait une rotation
-
-        glTranslatef(-ogl.focal_u,-ogl.focal_v,-ogl.focal_n);
+        glTranslatef(ogl.focal_u,ogl.focal_v,ogl.focal_n);
         glRotatef(ogl.rot_u, -1.0, 0.0, 0.0) ; // U
         glRotatef(ogl.rot_v, 0.0, 1.0, 0.0) ; // V
-        glTranslatef(ogl.focal_u,ogl.focal_v,ogl.focal_n);
+        glTranslatef(-ogl.focal_u,-ogl.focal_v,-ogl.focal_n);
         ogl.rot_u=0.0f;
         ogl.rot_v=0.0f;
+        break;
+    case 0x0: // On ne fait rien
+        break;
+    default:
+        printf("You should not go there...\n");
+        break;
+    }
+    switch (ogl.flagTransformation & TRANSLATION_STATE)
+    {
+    case 0x1: // On fait une translation
+        glTranslatef(ogl.trans_u, ogl.trans_v, 0.0) ; /* translation dans le plan de vue */
+        printf("Translation with u = %02.2f and v = %02.2f \n",ogl.trans_u,ogl.trans_v);
+        /* mise à jour des coordonnées du point focal dans le repère de vue */
+        ogl.focal_u += ogl.trans_u ;
+        ogl.focal_v += ogl.trans_v ;
+        ogl.trans_u=0;
+        ogl.trans_v=0;
         break;
     case 0x0: // On ne fait rien
         break;
@@ -290,6 +307,11 @@ void Keyboard(unsigned char key, int x, int y){
             glutPostRedisplay();
             MatriceProjection();
             break;
+        case 'Z':
+            ogl.fzoom*=1/FZOOM;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
         default:
             break;
     }
@@ -297,16 +319,26 @@ void Keyboard(unsigned char key, int x, int y){
 
 void Mouse(int32_t b, int32_t state, int32_t sx, int32_t sy) {
     if (b == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        printf("Clic gauche\n");
         ogl.flagTransformation |= ROTATION_STATE;
         ogl.sx0 = sx;
         ogl.sy0 = sy;
     } else {
         ogl.flagTransformation &= ~ROTATION_STATE; 
     }
+    if (b == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+        printf("Clic droit\n");
+        ogl.flagTransformation |= TRANSLATION_STATE;
+        ogl.sx0 = sx;
+        ogl.sy0 = sy;
+    } else {
+        ogl.flagTransformation &= ~TRANSLATION_STATE; 
+    }
 }
 
 void Motion(int32_t sx, int32_t sy){
     int32_t vx, vy;
+
     
     
     if (ogl.flagTransformation & ROTATION_STATE) {
@@ -318,8 +350,30 @@ void Motion(int32_t sx, int32_t sy){
         ogl.rot_u = vy * ROTATION_SENSIBILITY;
         glutPostRedisplay();
     }
-
-
+    if (ogl.flagTransformation & TRANSLATION_STATE) {
+        float q_u, q_v;
+        float transl_absolute_u, transl_absolute_v;
+        vx = sx - ogl.sx0;
+        vy = ogl.sy0 - sy;
+        ogl.sx0 = sx;
+        ogl.sy0 = sy;
+        // 1 : On prend le rapport entre vx, vy et la taille totale
+        q_u=(float)vx/ogl.winSizeX;
+        q_v=(float)vy/ogl.winSizeY;
+        printf("vx1 : %02.2f\n", q_u);
+        // 2 : Ca nous donne la translation à dmin
+        transl_absolute_u = q_u * (ogl.Umax-ogl.Umin);
+        transl_absolute_v = q_v * (ogl.Vmax-ogl.Vmin);
+        printf("transl_absolute_u : %02.2f\n", transl_absolute_u);
+        // 3 : On calcule la translation qu'il faut donc avec focus
+        transl_absolute_u = (float)transl_absolute_u * fabsf(ogl.focal_n)/ogl.Dmin;
+        transl_absolute_v = (float)transl_absolute_v * fabsf(ogl.focal_n)/ogl.Dmin;
+        printf("transl_absolute_u2 : %02.2f\n", transl_absolute_u);
+        // 4 : On multiplie par le zoom et les facteurs d'anysotropie
+        ogl.trans_u = transl_absolute_u*ogl.fu*ogl.fzoom;
+        ogl.trans_v = transl_absolute_v*ogl.fv*ogl.fzoom;
+        glutPostRedisplay();
+    }
 }
 
 
@@ -336,9 +390,9 @@ void InitialiserParametresGraphiques(void){
     ogl.winPosY=100;
 
     /* repere de vue */
-    ogl.obsX = 2.0;
-    ogl.obsY = 1.6;
-    ogl.obsZ = 1.4;
+    ogl.obsX = 4;
+    ogl.obsY = 2;
+    ogl.obsZ = 1.5;
 
     ogl.focalX=0.5;
     ogl.focalY=0.5;
@@ -363,7 +417,7 @@ void InitialiserParametresGraphiques(void){
     ogl.Vmin = -0.5;
     ogl.Vmax = 0.5;
     ogl.Dmin = 1;
-    ogl.Dmax = 10;
+    ogl.Dmax = 7;
 
     /* zoom */
 
@@ -390,7 +444,7 @@ void InitialiserParametresGraphiques(void){
 
     ogl.focal_u = 0.0f;
     ogl.focal_v = 0.0f;
-    ogl.focal_n = sqrtf( (ogl.obsX - ogl.focalX)*(ogl.obsX - ogl.focalX)
+    ogl.focal_n = -sqrtf( (ogl.obsX - ogl.focalX)*(ogl.obsX - ogl.focalX)
     + (ogl.obsY - ogl.focalY)*(ogl.obsY - ogl.focalY)
     + (ogl.obsZ - ogl.focalZ)*(ogl.obsZ - ogl.focalZ) );
 
