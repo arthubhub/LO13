@@ -71,6 +71,16 @@ Opengl ogl;
 
 /* niveau 4 */
 
+void  ZbufferActivation (void) { 
+    glEnable (GL_DEPTH_TEST) ; 
+}
+
+void  ZbufferDesactivation (void) { 
+    glDisable (GL_DEPTH_TEST) ; 
+}
+
+
+
 void computeLastTransformation(){
     // On évalue la rotation
     switch ((ogl.flagTransformation & ROTATION_STATE) >> 0x1)
@@ -131,7 +141,9 @@ void TracerObjet(void){
     glEnd();
 }
 void EffacerEcran(void){
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
 }
 void MatriceVue(void)
 {
@@ -277,7 +289,11 @@ void MatriceProjection(void){
 void Display(void){
     EffacerEcran();
     MatriceVue(); // -> matricemode modelview , identité, lookat()
+        // test
+    ZbufferActivation();
     TracerObjet(); // -> tracer les triangles
+    ZbufferDesactivation();
+
     ViderMemoireEcran(); // -> glflush 
 
 }
@@ -458,13 +474,15 @@ void ModeleDiscret(void){
     defineCube();
 }
 void CreationFenetreGraphique(void){
-    //glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); // for 1 buffer
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); // for 2 buffers (faster)
+    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH) ; // double pour aller plus vite et depth pour le z-buffer
+
     glutInitWindowSize(ogl.winSizeX,ogl.winSizeY);
     glutInitWindowPosition(ogl.winPosX, ogl.winPosY);
     glutCreateWindow("LO13 - Arthur");
 }
 void InitialiserEnvironnementGraphique(void){
+
+
     /* Couleur de fond */
     glClearColor(ogl.bgColorR,ogl.bgColorG,ogl.bgColorB,0.0);
     /* couleur courante*/
