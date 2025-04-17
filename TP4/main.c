@@ -151,7 +151,8 @@ void MatriceVue(void)
         ogl.vertX, ogl.vertY, ogl.vertZ);
 }
 void ViderMemoireEcran(void){
-    glFlush();
+    glutSwapBuffers() ; // -> for double buffer
+    //glFlush(); // -> for 1 buffer
 }
 
 
@@ -342,10 +343,7 @@ void Mouse(int32_t b, int32_t state, int32_t sx, int32_t sy) {
 void Motion(int32_t sx, int32_t sy){
     int32_t vx, vy;
     float q_u, q_v;
-    float transl_absolute_u, transl_absolute_v;
-
-
-
+    float transl_u, transl_v;
 
     vx = sx - ogl.sx0;
     vy = ogl.sy0 - sy;
@@ -357,52 +355,21 @@ void Motion(int32_t sx, int32_t sy){
     }
 
     if (ogl.flagTransformation & TRANSLATION_STATE) {
-
-        /*
-
-            
-               /|
-             /  |
-            |   |
-          / |   |
-        *   |   |
-          \ |   |
-            |   |
-        dmin^\  |
-              \ |
-                |
-        focal_n ^ 
-        
-        
-        1 - on prend le déplacement t en pixels
-        2 - on divise par la taille de la fenetre en pixels (regle de 3)
-        3 - on trouve le déplacement dans le plan de vue t' avec la taille du plan de vue
-        4 - on divise par dmin et on multiplie par la distance entre l'observateur et le point focal (regle de 3)
-
-
-        
-        */ 
-
-        // Étape 1 : ratio déplacement souris
+        // 1. Règle de trois pour rapport déplacement souris
         q_u = (float)vx / ogl.winSizeX;
         q_v = (float)vy / ogl.winSizeY;
 
-        // Étape 2 : translation dans le plan de vue
-        transl_absolute_u = q_u * (ogl.Umax - ogl.Umin) * ogl.fzoom * ogl.fu ;
-        transl_absolute_v = q_v * (ogl.Vmax - ogl.Vmin) * ogl.fzoom * ogl.fv ;
+        // 2. Application au cadrage (plan de vue)
+        transl_u = q_u * (ogl.Umax - ogl.Umin);
+        transl_v = q_v * (ogl.Vmax - ogl.Vmin);
 
-        // Étape 3 : adaptation à la profondeur (plan de vue à dmin)
-        transl_absolute_u *= fabs(ogl.focal_n) / ogl.Dmin;
-        transl_absolute_v *= fabs(ogl.focal_n) / ogl.Dmin;
+        // 3. Correction par Thalès
+        transl_u *= fabs(ogl.focal_n) / ogl.Dmin;
+        transl_v *= fabs(ogl.focal_n) / ogl.Dmin;
 
-        // Étape 4 : zoom et anisotropie
-        ogl.trans_u = transl_absolute_u ;
-        ogl.trans_v = transl_absolute_v ;
-
-        /*printf("sx = %d \nsy = %d\n", sx, sy);
-        printf("ogl.sx0 = %d \nogl.sy0 = %d\n", ogl.sx0, ogl.sy0);
-        printf("vx = %d \nvy = %d\n", vx, vy);
-        printf("q_u = %f \nq_v = %f\n", q_u, q_v);*/
+        // 4. Application du zoom et anisotropie
+        ogl.trans_u = transl_u * ogl.fu * ogl.fzoom;
+        ogl.trans_v = transl_v * ogl.fv * ogl.fzoom;
 
         glutPostRedisplay();
     }
@@ -410,6 +377,7 @@ void Motion(int32_t sx, int32_t sy){
     ogl.sx0 = sx;
     ogl.sy0 = sy;
 }
+
 
 
 
@@ -427,7 +395,7 @@ void InitialiserParametresGraphiques(void){
 
     /* repere de vue */
     ogl.obsX = 8;
-    ogl.obsY = 7;
+    ogl.obsY = 6;
     ogl.obsZ = 6;
 
     ogl.focalX=0.5;
@@ -490,7 +458,8 @@ void ModeleDiscret(void){
     defineCube();
 }
 void CreationFenetreGraphique(void){
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    //glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); // for 1 buffer
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); // for 2 buffers (faster)
     glutInitWindowSize(ogl.winSizeX,ogl.winSizeY);
     glutInitWindowPosition(ogl.winPosX, ogl.winPosY);
     glutCreateWindow("LO13 - Arthur");
