@@ -14,6 +14,16 @@
 #define TRANSLATION_STATE 1
 #define ROTATION_STATE 2
 
+/* Enums */
+
+typedef enum {
+    FILAIRE_STPC,
+    FILAIRE_UNIE_ATPC,
+    SOLIDE_DEG_ATPC,
+    SOLIDE_FILAIRE_ATPC
+} RenderMode;
+
+
 /* Structures */
 typedef struct mesh{
     uint8_t    nb_vertices;
@@ -39,6 +49,7 @@ typedef struct opengl {
     /* couleurs */
     float bgColorR, bgColorG, bgColorB;
     float penColorR, penColorG, penColorB;
+    float fillColorR, fillColorG, fillColorB;
 
     /* perspective de projection */
     float Umin, Umax;
@@ -59,6 +70,9 @@ typedef struct opengl {
     float focal_u, focal_v, focal_n;
     float trans_u, trans_v;
 
+
+    /* mode de tracé actif */
+    RenderMode renderMode;
 
 } Opengl;
 
@@ -118,11 +132,135 @@ void computeLastTransformation(){
     }
     
 }
+/**
+ * @brief       Rend un triangle selon son index dans la table des triangles
+ * 
+ * Cette fonction ajoute le triangle donné au tracé en utilisant glVertex3f.
+ * Elle peut être utilisée en mode uni ou en mode dégradé
+ * 
+ * @note        Cette fonction suppose que le contexte OpenGL est actif.
+ */
+void TracerTriangleUnique(uint16_t k){ 
+    uint16_t j,k,virt_base,real_base;
+    for (j=0; j < 3; j++){
+        virt_base = msh.triangles[k + j];
+        real_base = 3 * virt_base;  // Pas de "-1", indexation à partir de 0
+        glVertex3f(msh.vertices[real_base],     // x
+                   msh.vertices[real_base + 1], // y
+                   msh.vertices[real_base + 2]  // z
+        );
+    }
+}
+/**
+ * @brief       Rend l'objet courant selon le mode de tracé défini.
+ * 
+ * Cette fonction utilise le mode de tracé courant (champ ogl.renderMode)
+ * pour configurer OpenGL et dessiner l'objet 3D représenté par le mesh msh.
+ * Les différents modes qui l'utilisent incluent :
+ *  - FILAIRE_STPC
+ *  - FILAIRE_UNIE_ATPC
+ *  - SOLIDE_FILAIRE_ATPC
+ * 
+ * @note        Cette fonction suppose que le contexte OpenGL est actif.
+ */
+void TracerTrianglesBasique(void){
+    uint16_t i,k;
+    
+    glBegin(GL_TRIANGLES);
+    for (i=0; i < msh.nb_triangles; i++){
+        k = 3*i;
+        TracerTriangleUnique(k);
+    }
+    glEnd();
+}
+/**
+ * @brief       Trace les triangles avec un dégradé linéaire de rouge à bleu.
+ * 
+ * Cette fonction applique un dégradé linéaire pour chaque triangle
+ * du mesh en fonction de son indice dans la liste des triangles.
+ * 
+ * @note        Cette fonction suppose que le contexte OpenGL est actif.
+ */
+void TracerTrianglesDegLineaire(void) {
+    uint16_t i, k;
+    float t = 1 / (float)(msh.nb_triangles - 1);  // t de 0 à 1
 
+    // Boucle sur tous les triangles
+    glBegin(GL_TRIANGLES);
+    for (i = 0; i < msh.nb_triangles; i++) {
+        float r = 1.0f - t*i;  // Diminue le rouge
+        float b = t*i;          // Augmente le bleu
+        float g = 0.0f;       
+        glColor3f(r, g, b); 
+        k = 3 * i;
+        TracerTriangleUnique(k);
+    }
+    glEnd();
+}
 
 /* niveau 3 */
 
 void TracerObjet(void){
+
+
+    switch (ogl.renderMode) {
+        case FILAIRE_STPC: {
+            // Zbuffer -> non
+            // Polygone mode 
+            // couleur -> ogl.pencolorR,G,B
+            // Draw Triangles basic
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            TracerTrianglesBasique();
+            }
+            break;
+        case FILAIRE_UNIE_ATPC:{
+            // Zbuffer -> oui
+            // mode remplissage avec ogl.bgColorR,G,B
+            // draw triangles basic
+            // avancer l'objet
+            // mode contours avec ogl.pencolorR,G,B
+            // draw triangles basic
+            // reculer l'objet
+            // Zbuffer -> non
+            ZbufferActivation();
+
+
+
+
+            ZbufferDesactivation();
+
+            }
+            break;
+        case SOLIDE_DEG_ATPC:{
+            // Zbuffer -> oui
+            // mode remplissage 
+            // choisir couleur de début et de fin
+            // draw triangles mode degradé
+            // Zbuffer -> non
+            ZbufferActivation();
+            TracerTrianglesDegLineaire();
+            ZbufferDesactivation();
+            }
+            break;
+        case SOLIDE_FILAIRE_ATPC:{
+            // Zbuffer -> oui
+            // mode remplissage avec ogl.fillColorR,G,B
+            // draw triangles basic
+            // avancer l'objet
+            // mode contours avec ogl.pencolorR,G,B
+            // draw triangles basic
+            // reculer l'objet
+            // Zbuffer -> non
+            }
+            break;
+    }
+}
+
+
+
+
+
+    /*
     uint16_t i,j,k,virt_base,real_base;
     
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -139,7 +277,15 @@ void TracerObjet(void){
         }
     }
     glEnd();
-}
+
+    */
+
+
+
+
+
+
+
 void EffacerEcran(void){
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -289,11 +435,7 @@ void MatriceProjection(void){
 void Display(void){
     EffacerEcran();
     MatriceVue(); // -> matricemode modelview , identité, lookat()
-        // test
-    ZbufferActivation();
     TracerObjet(); // -> tracer les triangles
-    ZbufferDesactivation();
-
     ViderMemoireEcran(); // -> glflush 
 
 }
@@ -431,6 +573,10 @@ void InitialiserParametresGraphiques(void){
     ogl.penColorG=0.0;
     ogl.penColorB=0.0;
 
+    ogl.fillColorR=0.5;
+    ogl.fillColorG=0.5;
+    ogl.fillColorB=0.0;
+
     /* perpective de projection*/
     ogl.Umin = -0.5;
     ogl.Umax = 0.5;
@@ -469,6 +615,9 @@ void InitialiserParametresGraphiques(void){
     + (ogl.obsZ - ogl.focalZ)*(ogl.obsZ - ogl.focalZ) );
 
 
+
+    // Mode de tracé par défaut
+    ogl.renderMode = FILAIRE_STPC;
 }
 void ModeleDiscret(void){
     defineCube();
