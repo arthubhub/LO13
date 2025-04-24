@@ -183,14 +183,15 @@ void TracerTrianglesBasique(void){
  */
 void TracerTrianglesDegLineaire(void) {
     uint16_t i, k;
+    float r,g,b;
     float t = 1 / (float)(msh.nb_triangles - 1);  // t de 0 à 1
 
     // Boucle sur tous les triangles
     glBegin(GL_TRIANGLES);
     for (i = 0; i < msh.nb_triangles; i++) {
-        float r = 1.0f - t*i;  // Diminue le rouge
-        float b = t*i;          // Augmente le bleu
-        float g = 0.0f;       
+        r = 1.0f - t*i;  // Diminue le rouge
+        b = t*i;          // Augmente le bleu
+        g = 0.0f;       
         glColor3f(r, g, b); 
         k = 3 * i;
         TracerTriangleUnique(k);
@@ -207,7 +208,6 @@ void DecalageAvantDesactivation(void)
 {
     glDisable (GL_POLYGON_OFFSET_LINE) ;
 }
-
 void DecalageArriereActivation(void)
 {
 glPolygonOffset (1.0, 1.0) ;
@@ -221,8 +221,6 @@ glDisable (GL_POLYGON_OFFSET_FILL) ;
 /* niveau 3 */
 
 void TracerObjet(void){
-
-
     switch (ogl.renderMode) {
         case FILAIRE_STPC: {
             // Zbuffer -> non
@@ -263,6 +261,7 @@ void TracerObjet(void){
             // draw triangles mode degradé
             // Zbuffer -> non
             ZbufferActivation();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             TracerTrianglesDegLineaire(); // Tracé en mode dégradé
             ZbufferDesactivation();
             }
@@ -511,6 +510,26 @@ void Keyboard(unsigned char key, int x, int y){
             glutPostRedisplay();
             MatriceProjection();
             break;
+        case '1':
+            ogl.renderMode = FILAIRE_STPC;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case '2':
+            ogl.renderMode = FILAIRE_UNIE_ATPC;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case '3':
+            ogl.renderMode = SOLIDE_DEG_ATPC;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case '4':
+            ogl.renderMode = SOLIDE_FILAIRE_ATPC;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
         default:
             break;
     }
@@ -654,10 +673,10 @@ void InitialiserParametresGraphiques(void){
 
 
     // Mode de tracé par défaut
-    //ogl.renderMode = FILAIRE_STPC;
+    ogl.renderMode = FILAIRE_STPC;
     //ogl.renderMode = FILAIRE_UNIE_ATPC;
     //ogl.renderMode = SOLIDE_DEG_ATPC;
-    ogl.renderMode = SOLIDE_FILAIRE_ATPC;
+    //ogl.renderMode = SOLIDE_FILAIRE_ATPC;
 
 }
 void ModeleDiscret(void){
