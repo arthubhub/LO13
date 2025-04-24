@@ -176,7 +176,7 @@ void InitializeMesh(Mesh *msh)  /* Initialisation de la struture mesh */
 void ReadMesh(Mesh *msh) /* lecture du fichier au format mesh INRIA Gamma3*/
 {
     FILE		*file;
-    static char file_name[] = "cube.mesh\0";
+    static char file_name[] = "tiger.mesh\0";
     char keyword[80];
     int i, j, ii, dim;
     if ((file = fopen(file_name, "r")) == NULL)
@@ -246,6 +246,70 @@ void ReadMesh(Mesh *msh) /* lecture du fichier au format mesh INRIA Gamma3*/
     printf("mesh : %d vertices -- %d triangles (%ld kbytes)\n", msh->number_of_vertices, msh->number_of_triangles, msh->memory/1024);
 }
 
+
+void NormalizeMesh(Mesh *msh) /* normalisation des coordonnees des sommets entre 0 et 1 */
+{
+    int	        point_index, point_x_index, j;
+    // cmin et cmax sont le premier point
+    for (j=0; j<3; j++)
+    {
+        msh->cmin[j] = msh->vertices[j];
+        msh->cmax[j] = msh->vertices[j];
+    }
+    // pour chaque point
+    for (point_index=1; point_index<msh->number_of_vertices; point_index++)
+    {
+        // pour chaque coordonnée
+        point_x_index = 3 * point_index;
+        for (j=0; j<3; j++)
+        {
+            // si la coordonnée < cmin -> cmin = la coordonnée
+            if (msh->cmin[j] > msh->vertices[point_x_index+j])
+                msh->cmin[j] = msh->vertices[point_x_index+j];
+            if (msh->cmax[j] < msh->vertices[point_x_index+j])
+                msh->cmax[j] = msh->vertices[point_x_index+j];
+        }
+    }
+    for (j=0; j<3; j++){ // le centre c'est le point du milieu de chaque coordonnée
+        msh->ccenter[j] = (float)(0.5 * (msh->cmin[j] + msh->cmax[j]));
+    }
+    printf("min : x=%f  y=%f  z=%f\n",msh->cmin[0],msh->cmin[1],msh->cmin[2]);
+    printf("max : x=%f  y=%f  z=%f\n",msh->cmax[0],msh->cmax[1],msh->cmax[2]);
+    printf("centre : x=%f  y=%f  z=%f\n",msh->ccenter[0],msh->ccenter[1],msh->ccenter[2]);
+
+
+    msh->delta = msh->cmax[0] - msh->cmin[0]; // delta prend la distance entre cmin(x) et cmax(x)
+    for (j=1; j<3; j++) // on calcule le plus grand delta
+        if (msh->delta < msh->cmax[j] - msh->cmin[j])
+            msh->delta = msh->cmax[j] - msh->cmin[j];
+    printf("delta=%f\n",msh->delta);
+    // pour chaque point du mesh
+    for (point_index=0; point_index<msh->number_of_vertices; point_index++)
+    {
+        point_x_index = 3 * point_index;
+        for (j=0; j<3; j++)
+        {
+            msh->vertices[point_x_index+j] += 0.5*msh->delta - msh->ccenter[j]; // on met le point min en 0.5
+            msh->vertices[point_x_index+j] /= msh->delta; // on met à l'échelle
+        }
+    }
+    
+    for (j=0; j<3; j++)
+    {
+        msh->ccenter[j]= 0.5;
+        msh->cmin[j] -=  msh->cmin[j];
+        msh->cmax[j] -=  msh->cmin[j];
+        msh->ccenter[j] =0.5; 
+
+        msh->cmax[j] /= msh->delta; 
+        msh->cmin[j] /= msh->delta;
+    }
+    printf("min : x=%f  y=%f  z=%f\n",msh->cmin[0],msh->cmin[1],msh->cmin[2]);
+    printf("max : x=%f  y=%f  z=%f\n",msh->cmax[0],msh->cmax[1],msh->cmax[2]);
+    printf("centre : x=%f  y=%f  z=%f\n",msh->ccenter[0],msh->ccenter[1],msh->ccenter[2]);
+
+
+}
   /********** ----------------------------------------------------------------- **********/
  /********** Procédures de l'étage 4, transformations et traçage des triangles **********/
 /********** ----------------------------------------------------------------- **********/
@@ -783,8 +847,8 @@ void InitialiserParametresGraphiques(void){
     ogl.focalZ=0.5;
 
     ogl.vertX=0.0;
-    ogl.vertY=1.0;
-    ogl.vertZ=0.0;
+    ogl.vertY=0.0;
+    ogl.vertZ=1.0;
 
     /*couleurs*/
     ogl.bgColorB=1.0;
@@ -852,6 +916,7 @@ void ModeleDiscret(void){
     // Pour un modèle mesh :
     InitializeMesh(&msh);
     ReadMesh(&msh);
+    NormalizeMesh(&msh);
 }
 void CreationFenetreGraphique(void){
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH) ; // double pour aller plus vite et depth pour le z-buffer
