@@ -141,7 +141,7 @@ void computeLastTransformation(){
  * @note        Cette fonction suppose que le contexte OpenGL est actif.
  */
 void TracerTriangleUnique(uint16_t k){ 
-    uint16_t j,k,virt_base,real_base;
+    uint16_t j,virt_base,real_base;
     for (j=0; j < 3; j++){
         virt_base = msh.triangles[k + j];
         real_base = 3 * virt_base;  // Pas de "-1", indexation à partir de 0
@@ -198,6 +198,26 @@ void TracerTrianglesDegLineaire(void) {
     glEnd();
 }
 
+void DecalageAvantActivation(void)
+{
+    glPolygonOffset (1.0, 1.0) ;
+    glEnable (GL_POLYGON_OFFSET_LINE) ; 
+}
+void DecalageAvantDesactivation(void)
+{
+    glDisable (GL_POLYGON_OFFSET_LINE) ;
+}
+
+void DecalageArriereActivation(void)
+{
+glPolygonOffset (1.0, 1.0) ;
+glEnable (GL_POLYGON_OFFSET_FILL) ; 
+}
+void DecalageArriereDesactivation(void)
+{
+glDisable (GL_POLYGON_OFFSET_FILL) ;
+}
+
 /* niveau 3 */
 
 void TracerObjet(void){
@@ -216,17 +236,22 @@ void TracerObjet(void){
         case FILAIRE_UNIE_ATPC:{
             // Zbuffer -> oui
             // mode remplissage avec ogl.bgColorR,G,B
+            // reculer l'objet
             // draw triangles basic
             // avancer l'objet
             // mode contours avec ogl.pencolorR,G,B
             // draw triangles basic
-            // reculer l'objet
             // Zbuffer -> non
             ZbufferActivation();
-
-
-
-
+                DecalageArriereActivation();
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
+                    TracerTrianglesBasique();  // Tracé en mode remplissage
+                DecalageArriereDesactivation();
+                
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
+                TracerTrianglesBasique();  // Tracé en mode contour
             ZbufferDesactivation();
 
             }
@@ -238,19 +263,31 @@ void TracerObjet(void){
             // draw triangles mode degradé
             // Zbuffer -> non
             ZbufferActivation();
-            TracerTrianglesDegLineaire();
+            TracerTrianglesDegLineaire(); // Tracé en mode dégradé
             ZbufferDesactivation();
             }
             break;
         case SOLIDE_FILAIRE_ATPC:{
             // Zbuffer -> oui
             // mode remplissage avec ogl.fillColorR,G,B
+            // reculer l'objet
             // draw triangles basic
             // avancer l'objet
             // mode contours avec ogl.pencolorR,G,B
             // draw triangles basic
-            // reculer l'objet
             // Zbuffer -> non
+
+            ZbufferActivation();
+            glColor3f(ogl.fillColorR, ogl.fillColorG, ogl.fillColorB);
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                DecalageArriereActivation();
+                    TracerTrianglesBasique();  // Tracé en mode remplissage 
+                DecalageArriereDesactivation();
+
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
+                TracerTrianglesBasique();  // Tracé en mode contour
+            ZbufferDesactivation();
             }
             break;
     }
@@ -617,7 +654,11 @@ void InitialiserParametresGraphiques(void){
 
 
     // Mode de tracé par défaut
-    ogl.renderMode = FILAIRE_STPC;
+    //ogl.renderMode = FILAIRE_STPC;
+    //ogl.renderMode = FILAIRE_UNIE_ATPC;
+    //ogl.renderMode = SOLIDE_DEG_ATPC;
+    ogl.renderMode = SOLIDE_FILAIRE_ATPC;
+
 }
 void ModeleDiscret(void){
     defineCube();
