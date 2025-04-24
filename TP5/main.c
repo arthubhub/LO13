@@ -3,6 +3,7 @@
 #include <GL/glut.h>
 #include <stdint.h>
 #include <math.h>
+#include <string.h>
 
 #define NB_VERTICES_CUBE 8
 #define NB_TRIANGLES_CUBE 12
@@ -25,20 +26,26 @@ typedef enum {
 
 
 /* Structures */
-typedef struct mesh{
-    uint8_t    nb_vertices;
-    float       *vertices;
-    
-    uint8_t    nb_triangles;
-    uint8_t    *triangles; 
-
-} Mesh ;
+typedef struct mesh {
+    int		number_of_vertices;		    /* nombre de sommets */
+    float		*vertices;					/* liste des coordonnees des sommets*/
+    float		*normal_v;					/* liste des normales aux sommets*/
+    int		number_of_triangles;		/* nombre de triangles */
+    int		*triangles;					/* liste des sommets des triangles */
+    float		*alpha_t;					/* liste des angles aux sommets*/
+    float		*normal_t;					/* liste des normales aux faces triangulaires*/
+    float		ccenter[3];					/* coordonnees du centre de la boite englobante */
+    float		cmin[3], cmax[3];			/* coordonnees min et max de la boite englobante */
+    float		delta;						/* taille maximale de la boite englobante suivant les axes */
+    long int		memory;						/* memoire allouee pour la structure mesh */
+    int		error;						/* arret du programme si error est non nul */
+} Mesh;
 
 typedef struct opengl {
 
     /* window */
-    uint16_t winSizeX, winSizeY;
-    uint16_t winPosX, winPosY;
+    int winSizeX, winSizeY;
+    int winPosX, winPosY;
 
 
     /* repere de vue */
@@ -83,7 +90,166 @@ Opengl ogl;
 
 
 
-/* niveau 4 */
+
+
+
+  /********** ------------------------------------------------------------------------------------ **********/
+ /********** Procédures pour la lecture et la normalisation du maillage et le calcul des normales **********/
+/********** ------------------------------------------------------------------------------------ **********/
+
+double NormSquare(float vect[3])
+{
+    return((vect[0]*vect[0]) + (vect[1]*vect[1]) + (vect[2]*vect[2]));
+}
+
+double Norm(float vect[3])
+{
+    return(sqrt(NormSquare(vect)));
+}
+
+
+double DotProduct(float vect1[3], float vect2[3])
+{
+    return((vect1[0]*vect2[0]) + (vect1[1]*vect2[1]) + (vect1[2]*vect2[2]));
+}
+
+
+void CrossProduct(float vect1[3], float vect2[3], float *result)
+{
+    double        norme;
+
+    result[0] = (vect1[1]*vect2[2]) - (vect1[2]*vect2[1]);
+    result[1] = (vect1[2]*vect2[0]) - (vect1[0]*vect2[2]);
+    result[2] = (vect1[0]*vect2[1]) - (vect1[1]*vect2[0]);
+    norme = Norm(result); /*normalisation du produit vectoriel*/
+    if (norme != 0.0)
+    {
+        result[0] = (float)(result[0]/norme);
+        result[1] = (float)(result[1]/norme);
+        result[2] = (float)(result[2]/norme);
+    }
+}
+
+
+double Angle(float point1[3], float point2[3], float point3[3]) /* calcul l'angle entre les vecteurs (point2,point1) et (point2,point3) */
+{
+    double        angle, d;
+    float         v1[3], v2[3];
+    int           i;
+
+    for (i=0; i<3; i++)
+    {
+        v1[i] = point1[i] - point2[i];
+        v2[i] = point3[i] - point2[i];
+    }
+    d = DotProduct(v1, v2);
+    if (d > 1.0)
+        d = 1.0;
+    else if (d < -1.0)
+        d = -1.0;
+    angle = acos(d / sqrt( NormSquare(v1) * NormSquare(v2)));
+    return(angle);
+}
+
+void InitializeMesh(Mesh *msh)  /* Initialisation de la struture mesh */
+{
+    int		j;
+
+    msh->number_of_vertices = 0;
+    msh->number_of_triangles = 0;
+    msh->vertices = NULL;
+    msh->triangles = NULL;
+    for (j=0; j<3; j++)
+    {
+        msh->ccenter[j] = 0.0;
+        msh->cmin[j] = 0.0;
+        msh->cmax[j] = 0.0;
+    }
+    msh->delta = 0.0;
+    msh->memory = 0;
+    msh->error = 0;
+}
+
+
+
+
+void ReadMesh(Mesh *msh) /* lecture du fichier au format mesh INRIA Gamma3*/
+{
+    FILE		*file;
+    static char file_name[] = "cube.mesh\0";
+    char keyword[80];
+    int i, j, ii, dim;
+    if ((file = fopen(file_name, "r")) == NULL)
+    {
+        printf("error: file %s not found\n", file_name);
+        msh->error = 100;
+        return;
+    }
+    for (;;)
+    {
+        fscanf(file, "%s", keyword);
+        if (strcmp(keyword, "EOF") == 0 || strcmp(keyword, "End") == 0 || strcmp(keyword, "end") == 0) /* fin du fichier */
+            break;
+        else if (strcmp(keyword, "Dimension") == 0 || strcmp(keyword, "dimension") == 0 ) /* mot cle dimension */
+            fscanf(file, "%d", &dim);
+        else if (strcmp(keyword, "Vertices") == 0 || strcmp(keyword, "vertices") == 0 )  /* mot cle Vertices */
+        {
+            fscanf(file, "%d", &(msh->number_of_vertices));
+            msh->vertices = (float*)malloc((3*msh->number_of_vertices)*sizeof(float));
+            if (!msh->vertices)
+            {
+                printf("error: not enough memory for %d vertices (%ld bytes)\n", msh->number_of_vertices, 3*msh->number_of_vertices*sizeof(float));
+                msh->error = 200;
+                return;
+            }
+            else
+                msh->memory += (3*msh->number_of_vertices)*sizeof(float);
+            if (dim == 2)
+            {
+                for (i=0; i<msh->number_of_vertices; i++)
+                {
+                    ii = 3 * i;
+                    fscanf(file, "%f %f %d", &(msh->vertices[ii]), &(msh->vertices[ii+1]), &j);
+                    msh->vertices[ii+2] = 0.0;
+                }
+            } else if (dim == 3)
+            {
+                for (i=0; i<msh->number_of_vertices; i++)
+                {
+                    ii = 3 * i;
+                    fscanf(file, "%f %f %f %d", &(msh->vertices[ii]), &(msh->vertices[ii+1]), &(msh->vertices[ii+2]), &j);
+                }
+            }
+        } else if (strcmp(keyword, "Triangles") == 0 || strcmp(keyword, "triangles") == 0) /* mot cle Triangles */
+        {
+            fscanf(file, "%d", &(msh->number_of_triangles));
+            msh->triangles = (int*)malloc((3*msh->number_of_triangles)*sizeof(int));
+            if (!msh->triangles)
+            {
+                printf("error: not enough memory for %d triangles (%ld bytes)\n", msh->number_of_triangles, 3*msh->number_of_triangles*sizeof(int));
+                msh->error = 200;
+                return;
+            }
+            else
+                msh->memory += (3*msh->number_of_triangles)*sizeof(int);
+            for (i=0; i<msh->number_of_triangles; i++)
+            {
+                ii = 3 * i;
+                fscanf(file, "%d %d %d %d", &(msh->triangles[ii]), &(msh->triangles[ii+1]), &(msh->triangles[ii+2]), &j);
+                for (j=0; j<3; j++)
+                    msh->triangles[ii+j]--;
+            }
+        }
+    }
+    fclose(file);
+    /* affichage a l'ecran des infos sur le maillage */
+    printf("mesh : %d vertices -- %d triangles (%ld kbytes)\n", msh->number_of_vertices, msh->number_of_triangles, msh->memory/1024);
+}
+
+  /********** ----------------------------------------------------------------- **********/
+ /********** Procédures de l'étage 4, transformations et traçage des triangles **********/
+/********** ----------------------------------------------------------------- **********/
+
 
 void  ZbufferActivation (void) { 
     glEnable (GL_DEPTH_TEST) ; 
@@ -140,8 +306,8 @@ void computeLastTransformation(){
  * 
  * @note        Cette fonction suppose que le contexte OpenGL est actif.
  */
-void TracerTriangleUnique(uint16_t k){ 
-    uint16_t j,virt_base,real_base;
+void TracerTriangleUnique(int k){ 
+    int j,virt_base,real_base;
     for (j=0; j < 3; j++){
         virt_base = msh.triangles[k + j];
         real_base = 3 * virt_base;  // Pas de "-1", indexation à partir de 0
@@ -164,10 +330,10 @@ void TracerTriangleUnique(uint16_t k){
  * @note        Cette fonction suppose que le contexte OpenGL est actif.
  */
 void TracerTrianglesBasique(void){
-    uint16_t i,k;
+    int i,k;
     
     glBegin(GL_TRIANGLES);
-    for (i=0; i < msh.nb_triangles; i++){
+    for (i=0; i < msh.number_of_triangles; i++){
         k = 3*i;
         TracerTriangleUnique(k);
     }
@@ -182,13 +348,13 @@ void TracerTrianglesBasique(void){
  * @note        Cette fonction suppose que le contexte OpenGL est actif.
  */
 void TracerTrianglesDegLineaire(void) {
-    uint16_t i, k;
+    int i, k;
     float r,g,b;
-    float t = 1 / (float)(msh.nb_triangles - 1);  // t de 0 à 1
+    float t = 1 / (float)(msh.number_of_triangles - 1);  // t de 0 à 1
 
     // Boucle sur tous les triangles
     glBegin(GL_TRIANGLES);
-    for (i = 0; i < msh.nb_triangles; i++) {
+    for (i = 0; i < msh.number_of_triangles; i++) {
         r = 1.0f - t*i;  // Diminue le rouge
         b = t*i;          // Augmente le bleu
         g = 0.0f;       
@@ -297,11 +463,11 @@ void TracerObjet(void){
 
 
     /*
-    uint16_t i,j,k,virt_base,real_base;
+    int i,j,k,virt_base,real_base;
     
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBegin(GL_TRIANGLES);
-    for (i=0; i < msh.nb_triangles; i++){
+    for (i=0; i < msh.number_of_triangles; i++){
         k = 3*i;
         for (j=0; j < 3; j++){
             virt_base = msh.triangles[k + j];
@@ -355,11 +521,11 @@ void ViderMemoireEcran(void){
 /* niveau 2 */
 
 void defineCube(void){
-    uint8_t i;
+    int i;
     
     
-    msh.nb_vertices = NB_VERTICES_CUBE;
-    msh.vertices    = (float*)malloc(msh.nb_vertices*3*sizeof(float));
+    msh.number_of_vertices = NB_VERTICES_CUBE;
+    msh.vertices    = (float*)malloc(msh.number_of_vertices*3*sizeof(float));
 /*    
           4-----------5
          /|          /|
@@ -369,7 +535,7 @@ void defineCube(void){
         |/          |/
         3-----------2---- X
 */
-    for (i=0; i<msh.nb_vertices*3;i++ ){
+    for (i=0; i<msh.number_of_vertices*3;i++ ){
         msh.vertices[i]=0.0;
     }
     
@@ -404,8 +570,8 @@ void defineCube(void){
     msh.vertices[3*i ]=1.0;
     msh.vertices[3*i +2 ]=1.0;
 
-    msh.nb_triangles = NB_TRIANGLES_CUBE;
-    msh.triangles=(uint8_t*)malloc(msh.nb_triangles*3*sizeof(uint8_t));
+    msh.number_of_triangles = NB_TRIANGLES_CUBE;
+    msh.triangles=(int*)malloc(msh.number_of_triangles*3*sizeof(int));
 
     
     // Face du bas
@@ -680,7 +846,12 @@ void InitialiserParametresGraphiques(void){
 
 }
 void ModeleDiscret(void){
-    defineCube();
+    // Pour le cube :
+    // defineCube();
+
+    // Pour un modèle mesh :
+    InitializeMesh(&msh);
+    ReadMesh(&msh);
 }
 void CreationFenetreGraphique(void){
     glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH) ; // double pour aller plus vite et depth pour le z-buffer
