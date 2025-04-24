@@ -296,9 +296,8 @@ void NormalizeMesh(Mesh *msh) /* normalisation des coordonnees des sommets entre
     
     for (j=0; j<3; j++)
     {
-        msh->ccenter[j]= 0.5;
-        msh->cmin[j] -=  msh->cmin[j];
-        msh->cmax[j] -=  msh->cmin[j];
+        msh->cmin[j] +=  0.5*msh->delta - msh->ccenter[j];
+        msh->cmax[j] +=  0.5*msh->delta - msh->ccenter[j];
         msh->ccenter[j] =0.5; 
 
         msh->cmax[j] /= msh->delta; 
