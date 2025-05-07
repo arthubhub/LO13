@@ -1242,8 +1242,8 @@ void Keyboard(unsigned char key, int x, int y){
             break;
         case 's':
             ogl.shrink+=0.1;
-            if (ogl.shrink>1.0)
-                ogl.shrink=1.0;
+            if (ogl.shrink>0.9f)
+                ogl.shrink=0.9f;
             glutPostRedisplay();
             MatriceProjection();
             break;
@@ -1497,7 +1497,7 @@ void InitialiserParametresGraphiques(void){
 
 
 
-    ogl.shrink=0.1f;
+    ogl.shrink=0.0f;
 
 
 }
