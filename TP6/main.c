@@ -21,11 +21,39 @@ typedef enum {
     FILAIRE_STPC,
     FILAIRE_UNIE_ATPC,
     SOLIDE_DEG_ATPC,
-    SOLIDE_FILAIRE_ATPC
+    SOLIDE_FILAIRE_ATPC,
+    OMBRAGE_CONST,
+    OMBRAGE_CONST_FILAIRE,
+    OMBRAGE_FILAIRE_CONST,
+    OMBRAGE_PHONG,
+    OMBRAGE_PHONG_FILAIRE,
+    OMBRAGE_FILAIRE_PHONG
 } RenderMode;
 
 
 /* Structures */
+
+
+/* source lumineuse */
+typedef struct source
+{
+float position[4] ;
+float ambient[4] ;
+float diffuse[4] ;
+float specular[4] ;
+} Source ;
+
+/* materiau */
+typedef struct material
+{
+    float ambient[4] ;
+    float diffuse[4] ;
+    float specular[4] ;
+    float shininess ;
+} Material ;
+
+/* modele discret */
+
 typedef struct mesh {
     int		number_of_vertices;		    /* nombre de sommets */
     float		*vertices;					/* liste des coordonnees des sommets*/
@@ -40,6 +68,8 @@ typedef struct mesh {
     long int		memory;						/* memoire allouee pour la structure mesh */
     int		error;						/* arret du programme si error est non nul */
 } Mesh;
+
+
 
 typedef struct opengl {
 
@@ -80,6 +110,12 @@ typedef struct opengl {
 
     /* mode de tracé actif */
     RenderMode renderMode;
+
+    /* source lumineuse */
+    Source src;
+
+    /* materiau */
+    Material plastic, copper, steel, *current_mat;
 
 } Opengl;
 
@@ -178,7 +214,7 @@ void ReadMesh(Mesh *msh) /* lecture du fichier au format mesh INRIA Gamma3*/
     char		file_name[264], keyword[80];
     int           i, j, ii, dim;
 
-    sprintf(file_name, "Eiffel.mesh");
+    sprintf(file_name, "tiger.mesh");
     if ((file = fopen(file_name, "r")) == NULL)
     {
         printf("error: file %s not found\n", file_name);
@@ -439,11 +475,11 @@ void SetNormals(Mesh *msh)
 
 
 void  ZbufferActivation (void) { 
-    glEnable (GL_DEPTH_TEST) ; 
+    glEnable (GL_DEPTH_TEST); 
 }
 
 void  ZbufferDesactivation (void) { 
-    glDisable (GL_DEPTH_TEST) ; 
+    glDisable (GL_DEPTH_TEST); 
 }
 
 
@@ -454,8 +490,8 @@ void computeLastTransformation(){
     {
     case 0x1: // On fait une rotation
         glTranslatef(ogl.focal_u,ogl.focal_v,ogl.focal_n);
-        glRotatef(ogl.rot_u, -1.0, 0.0, 0.0) ; // U
-        glRotatef(ogl.rot_v, 0.0, 1.0, 0.0) ; // V
+        glRotatef(ogl.rot_u, -1.0, 0.0, 0.0); // U
+        glRotatef(ogl.rot_v, 0.0, 1.0, 0.0); // V
         glTranslatef(-ogl.focal_u,-ogl.focal_v,-ogl.focal_n);
         ogl.rot_u=0.0f;
         ogl.rot_v=0.0f;
@@ -469,7 +505,7 @@ void computeLastTransformation(){
     switch (ogl.flagTransformation & TRANSLATION_STATE)
     {
     case 0x1: // On fait une translation
-        glTranslatef(ogl.trans_u, ogl.trans_v, 0.0) ; /* translation dans le plan de vue */
+        glTranslatef(ogl.trans_u, ogl.trans_v, 0.0); /* translation dans le plan de vue */
         //printf("Translation with u = %02.2f and v = %02.2f \n",ogl.trans_u,ogl.trans_v);
         /* mise à jour des coordonnées du point focal dans le repère de vue */
         ogl.focal_u += ogl.trans_u ;
@@ -498,6 +534,34 @@ void TracerTriangleUnique(int k){
     for (j=0; j < 3; j++){
         virt_base = msh.triangles[k + j];
         real_base = 3 * virt_base;  // Pas de "-1", indexation à partir de 0
+        glVertex3f(msh.vertices[real_base],     // x
+                   msh.vertices[real_base + 1], // y
+                   msh.vertices[real_base + 2]  // z
+        );
+    }
+}
+/**
+ * @brief       Rend un triangle selon son index dans la table des triangles avec un ombrage de Phong
+ * 
+ * Cette fonction ajoute le triangle donné au tracé en utilisant glVertex3f.
+ * Elle est utilisée pour le tracé avec un ombrage de Phong.
+ * 
+ * @note        Cette fonction suppose que le contexte OpenGL est actif.
+ */
+void TracerTriangleUniquePhong(int k){ 
+    int j,virt_base,real_base;
+    for (j=0; j < 3; j++){ // pour chaque sommet du triangle
+        virt_base = msh.triangles[k + j];
+        real_base = 3 * virt_base;  // Pas de "-1", indexation à partir de 0
+
+        /* les coordonnées de la normale au sommet du triangle i */
+        glNormal3f(
+            msh.normal_v[real_base],     //normale_x
+            msh.normal_v[real_base + 1], //normale_y
+            msh.normal_v[real_base + 2]  //normale_z
+        );
+
+        /* les coordonnées du  sommet du triangle i */
         glVertex3f(msh.vertices[real_base],     // x
                    msh.vertices[real_base + 1], // y
                    msh.vertices[real_base + 2]  // z
@@ -552,24 +616,99 @@ void TracerTrianglesDegLineaire(void) {
     glEnd();
 }
 
+/**
+ * @brief       Trace les triangles avec la normale pour un obrage linéaire
+ * 
+ * Cette fonction applique un ombrage linéaire pour chaque triangle
+ * du mesh en fonction de son indice dans la liste des triangles.
+ * 
+ * @note        Cette fonction suppose que le contexte OpenGL est actif.
+ */
+void TracerTrianglesOmbrageConstant(void) {
+    int i, k;
+    float normale_x, normale_y, normale_z;
+    // Boucle sur tous les triangles
+    glBegin(GL_TRIANGLES);
+    for (i = 0; i < msh.number_of_triangles; i++) {
+        k = 3 * i;
+        normale_x=msh.normal_t[k];
+        normale_y=msh.normal_t[k+1];
+        normale_z=msh.normal_t[k+2];
+        glNormal3f(normale_x, normale_y, normale_z);
+        TracerTriangleUnique(k);
+    }
+    glEnd();
+}
+
+/**
+ * @brief       Trace les triangles avec un ombrage de Phong
+ * 
+ * Cette fonction applique un ombrage de Phong pour chaque triangle
+ * du mesh en fonction de son indice dans la liste des triangles.
+ * 
+ * @note        Cette fonction suppose que le contexte OpenGL est actif.
+ */
+void TracerTrianglesPhong(void) {
+    int i, k;
+    float normale_x, normale_y, normale_z;
+    // Boucle sur tous les triangles
+    glBegin(GL_TRIANGLES);
+    for (i = 0; i < msh.number_of_triangles; i++) {
+        k = 3 * i;
+        normale_x=msh.normal_t[k];
+        normale_y=msh.normal_t[k+1];
+        normale_z=msh.normal_t[k+2];
+        glNormal3f(normale_x, normale_y, normale_z);
+        TracerTriangleUniquePhong(k);
+    }
+    glEnd();
+}
+
+
 void DecalageAvantActivation(void)
 {
-    glPolygonOffset (1.0, 1.0) ;
-    glEnable (GL_POLYGON_OFFSET_LINE) ; 
+    glPolygonOffset (1.0, 1.0);
+    glEnable (GL_POLYGON_OFFSET_LINE); 
 }
 void DecalageAvantDesactivation(void)
 {
-    glDisable (GL_POLYGON_OFFSET_LINE) ;
+    glDisable (GL_POLYGON_OFFSET_LINE);
 }
 void DecalageArriereActivation(void)
 {
-glPolygonOffset (1.0, 1.0) ;
-glEnable (GL_POLYGON_OFFSET_FILL) ; 
+glPolygonOffset (1.0, 1.0);
+glEnable (GL_POLYGON_OFFSET_FILL); 
 }
 void DecalageArriereDesactivation(void)
 {
-glDisable (GL_POLYGON_OFFSET_FILL) ;
+glDisable (GL_POLYGON_OFFSET_FILL);
 }
+void ActivationSource(void){
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glPushMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glLightfv(GL_LIGHT0, GL_POSITION, ogl.src.position);
+    glPopMatrix();
+    glLightfv(GL_LIGHT0, GL_AMBIENT, ogl.src.ambient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, ogl.src.diffuse);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, ogl.src.specular);
+    glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+}
+void DesactivationSource(void){
+    glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHT0);
+}
+void AffectationMateriau(void)
+{
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, (ogl.current_mat)->ambient) ; // or *(ogl.current_mat).ambient
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (ogl.current_mat)->diffuse) ;
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, (ogl.current_mat)->specular) ;
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, (ogl.current_mat)->shininess) ;
+}
+
+
 
 /* niveau 3 */
 
@@ -642,6 +781,101 @@ void TracerObjet(void){
             ZbufferDesactivation();
             }
             break;
+        case OMBRAGE_CONST:{
+            ZbufferActivation();
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                /* ombrage */
+                ActivationSource() ;
+                AffectationMateriau() ;
+                glShadeModel(GL_FLAT) ; /* mode ombrage constant */
+                    TracerTrianglesOmbrageConstant(); 
+                DesactivationSource() ;
+ 
+            ZbufferDesactivation();
+            }
+            break;
+        case OMBRAGE_CONST_FILAIRE:{
+            ZbufferActivation();
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                DecalageArriereActivation();
+                    ActivationSource() ;
+                    AffectationMateriau() ;
+                    glShadeModel(GL_FLAT) ; /* mode ombrage constant */
+                        TracerTrianglesOmbrageConstant();  // Tracé en mode ombrage constant 
+                    DesactivationSource() ;
+                DecalageArriereDesactivation();
+
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
+                TracerTrianglesBasique();  // Tracé en mode contour
+            ZbufferDesactivation();
+            }
+            break;
+        case OMBRAGE_FILAIRE_CONST:{
+            ZbufferActivation();
+                DecalageArriereActivation();
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
+                    TracerTrianglesBasique();  // Tracé en mode remplissage
+                DecalageArriereDesactivation();
+                
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                ActivationSource() ;
+                AffectationMateriau() ;
+                glShadeModel(GL_FLAT) ; /* mode ombrage constant */
+                    TracerTrianglesOmbrageConstant();  // Tracé en mode contour
+                DesactivationSource() ;
+            ZbufferDesactivation();
+            }
+            break;
+        case OMBRAGE_PHONG:{
+            ZbufferActivation();
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                /* ombrage */
+                ActivationSource() ;
+                AffectationMateriau() ;
+                glShadeModel(GL_SMOOTH) ; /* mode ombrage de Phong */
+                    TracerTrianglesPhong(); 
+                DesactivationSource() ;
+ 
+            ZbufferDesactivation();
+            }
+            break;
+        case OMBRAGE_PHONG_FILAIRE:{
+            ZbufferActivation();
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                DecalageArriereActivation();
+                    ActivationSource() ;
+                    AffectationMateriau() ;
+                    glShadeModel(GL_SMOOTH) ; /* mode ombrage de Phong */
+                        TracerTrianglesPhong(); 
+                    DesactivationSource() ;
+                DecalageArriereDesactivation();
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
+                TracerTrianglesBasique();  // Tracé en mode contour
+            ZbufferDesactivation();
+            }
+            break;
+        case OMBRAGE_FILAIRE_PHONG:{
+            ZbufferActivation();
+                DecalageArriereActivation();
+                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+                    glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
+                    TracerTrianglesBasique();  // Tracé en mode remplissage
+                DecalageArriereDesactivation();
+                
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                ActivationSource() ;
+                AffectationMateriau() ;
+                glShadeModel(GL_SMOOTH) ; /* mode ombrage de Phong */
+                    TracerTrianglesPhong(); 
+                DesactivationSource() ;
+            ZbufferDesactivation();
+            }
+            break;
+
+        
     }
 }
 
@@ -683,22 +917,22 @@ void EffacerEcran(void){
 void MatriceVue(void)
 {
     /* pointer la matrice courante sur l’instance GL_MODELVIEW */
-    glMatrixMode(GL_MODELVIEW) ;
+    glMatrixMode(GL_MODELVIEW);
     /* Initialiser la matrice courante avec l’identité */
-    glLoadIdentity() ;
+    glLoadIdentity();
     /* Appliquer la dernière transformation géométrique */
     computeLastTransformation();
     /* Appliquer toutes les transformations géométriques antécédentes */
-    glMultMatrixf(ogl.geometricTransformations) ;
+    glMultMatrixf(ogl.geometricTransformations);
     /* Mettre à jour l’historique des transformations géométriques */
-    glGetFloatv(GL_MODELVIEW_MATRIX, ogl.geometricTransformations) ;
+    glGetFloatv(GL_MODELVIEW_MATRIX, ogl.geometricTransformations);
     /* Appliquer le changement de repère */
     gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
         ogl.focalX, ogl.focalY, ogl.focalZ,
         ogl.vertX, ogl.vertY, ogl.vertZ);
 }
 void ViderMemoireEcran(void){
-    glutSwapBuffers() ; // -> for double buffer
+    glutSwapBuffers(); // -> for double buffer
     //glFlush(); // -> for 1 buffer
 }
 
@@ -863,26 +1097,77 @@ void Keyboard(unsigned char key, int x, int y){
             glutPostRedisplay();
             MatriceProjection();
             break;
-        case '1':
+        case '0':
             ogl.renderMode = FILAIRE_STPC;
             glutPostRedisplay();
             MatriceProjection();
             break;
-        case '2':
+        case '1':
             ogl.renderMode = FILAIRE_UNIE_ATPC;
             glutPostRedisplay();
             MatriceProjection();
             break;
-        case '3':
+        case '2':
             ogl.renderMode = SOLIDE_DEG_ATPC;
             glutPostRedisplay();
             MatriceProjection();
             break;
-        case '4':
+        case '3':
             ogl.renderMode = SOLIDE_FILAIRE_ATPC;
             glutPostRedisplay();
             MatriceProjection();
             break;
+        case '4':
+            ogl.renderMode = OMBRAGE_CONST;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case '5':
+            ogl.renderMode = OMBRAGE_CONST_FILAIRE;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case '6':
+            ogl.renderMode = OMBRAGE_FILAIRE_CONST;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case '7':
+            ogl.renderMode = OMBRAGE_PHONG;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case '8':
+            ogl.renderMode = OMBRAGE_PHONG_FILAIRE;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case '9':
+            ogl.renderMode = OMBRAGE_FILAIRE_PHONG;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        
+
+        case 'a':
+            ogl.current_mat=&(ogl.steel);
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case 'c':
+            ogl.current_mat=&(ogl.copper);
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case 'p':
+            ogl.current_mat=&(ogl.plastic);
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+
+         
+
+
         default:
             break;
     }
@@ -952,6 +1237,89 @@ void Motion(int32_t sx, int32_t sy){
 void InitialiserLibrairieGraphique(int *argc, char **argv){
     glutInit(argc,argv);
 }
+
+void InitialiserSourceLumineuse(void){
+    /*Le premier champ indique les coordonnées homogènes de la source. Par exemple une source
+    dans la direction (1, 1, 1) à l’infini aura pour coordonnées (1.0, 1.0, 1.0, 0.0). Les autres champs
+    sont conformes à la théorie et sont respectivement 𝑆௔, 𝑆ௗ, 𝑆௦ avec la quatrième composante
+    pour chaque champ à fixer à 1.0 (pour l’opacité).*/
+
+    for (int i=0;i<=3;i++){
+        ogl.src.ambient[i]=1;
+        ogl.src.diffuse[i]=1;
+        ogl.src.position[i]=1;
+        ogl.src.specular[i]=1;
+    }
+    ogl.src.position[3]=0.0f; // position à l'infini
+
+}
+void InitialiserMateriaux(void){
+    // http://devernay.free.fr/cours/opengl/materials.html
+    /*En considérant des matériaux opaques, la dernière composante de ces vecteurs
+est toujours fixée à 1.0.*/
+
+
+    /* Plastic */
+    // Name 	        Ambient 	            Diffuse 	                    Specular 	                        Shininess
+    // cyan plastic 	0.0 	0.1 	0.06 	0.0 	0.50980392 	0.50980392 	0.50196078 	0.50196078 	0.50196078 	0.25
+    ogl.plastic.ambient[0]=0.0;
+    ogl.plastic.ambient[1]=0.15;
+    ogl.plastic.ambient[2]=0.15;
+    ogl.plastic.diffuse[0]=0.0;
+    ogl.plastic.diffuse[1]=0.50980392;
+    ogl.plastic.diffuse[2]=0.50980392;
+    ogl.plastic.specular[0]=0.50196078;
+    ogl.plastic.specular[1]=0.50196078;
+    ogl.plastic.specular[2]=0.50196078;
+    ogl.plastic.shininess=0.25;
+
+    ogl.plastic.ambient[3]=1;
+    ogl.plastic.diffuse[3]=1;
+    ogl.plastic.specular[3]=1;
+
+    /* copper */
+    // Name 	        Ambient 	                Diffuse 	                Specular 	                        Shininess
+    // copper 	        0.19125 	0.0735 	0.0225 	0.7038 	0.27048 	0.0828 	0.256777 	0.137622 	0.086014 	0.1
+    ogl.copper.ambient[0]=0.19125;
+    ogl.copper.ambient[1]=0.0735;
+    ogl.copper.ambient[2]=0.0225;
+    ogl.copper.diffuse[0]=0.7038;
+    ogl.copper.diffuse[1]=0.27048;
+    ogl.copper.diffuse[2]=0.0828;
+    ogl.copper.specular[0]=0.256777;
+    ogl.copper.specular[1]=0.137622;
+    ogl.copper.specular[2]=0.086014;
+    ogl.copper.shininess=0.1;
+
+    ogl.copper.ambient[3]=1;
+    ogl.copper.diffuse[3]=1;
+    ogl.copper.specular[3]=1;
+
+
+
+    /* steel */
+    // this one is more a grey plastic than real steel
+    // Name 	        Ambient 	                Diffuse 	                Specular 	                        Shininess
+    // steel 	        0.23125 	0.23125 	0.23125 	0.2775 	0.2775 	0.2775 	0.773911 	0.773911 	0.773911 	0.6
+    ogl.steel.ambient[0]=0.23125;
+    ogl.steel.ambient[1]=0.23125;
+    ogl.steel.ambient[2]=0.27;
+    ogl.steel.diffuse[0]=0.2775;
+    ogl.steel.diffuse[1]=0.2775;
+    ogl.steel.diffuse[2]=0.3075;
+    ogl.steel.specular[0]=0.773911;
+    ogl.steel.specular[1]=0.773911;
+    ogl.steel.specular[2]=0.803911;
+    ogl.steel.shininess=0.6;
+
+    ogl.steel.ambient[3]=1;
+    ogl.steel.diffuse[3]=1;
+    ogl.steel.specular[3]=1;
+
+    ogl.current_mat = &(ogl.plastic); // Materiau par défaut
+}
+
+
 void InitialiserParametresGraphiques(void){
     /* fenetre */
     ogl.winSizeX=700;
@@ -1031,6 +1399,18 @@ void InitialiserParametresGraphiques(void){
     //ogl.renderMode = SOLIDE_DEG_ATPC;
     //ogl.renderMode = SOLIDE_FILAIRE_ATPC;
 
+    /* source lumineuse */
+    InitialiserSourceLumineuse();
+
+    /* materiaux */
+    InitialiserMateriaux();
+
+
+
+
+    
+
+
 }
 void ModeleDiscret(void){
     // Pour le cube :
@@ -1040,9 +1420,10 @@ void ModeleDiscret(void){
     InitializeMesh(&msh);
     ReadMesh(&msh);
     NormalizeMesh(&msh);
+    SetNormals(&msh); /* calcul des normales */
 }
 void CreationFenetreGraphique(void){
-    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH) ; // double pour aller plus vite et depth pour le z-buffer
+    glutInitDisplayMode (GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH); // double pour aller plus vite et depth pour le z-buffer
 
     glutInitWindowSize(ogl.winSizeX,ogl.winSizeY);
     glutInitWindowPosition(ogl.winPosX, ogl.winPosY);
@@ -1075,6 +1456,7 @@ int main(int argc, char **argv){
     CreationFenetreGraphique(); // créer la fenetre avec les parametres configurés précédemment
     InitialiserEnvironnementGraphique();
     EvenementsGraphiques();
+
     BoucleInfinie();
     
     return 1;
