@@ -172,13 +172,13 @@ void InitializeMesh(Mesh *msh)  /* Initialisation de la struture mesh */
 
 
 
-
 void ReadMesh(Mesh *msh) /* lecture du fichier au format mesh INRIA Gamma3*/
 {
     FILE		*file;
-    static char file_name[] = "tiger.mesh\0";
-    char keyword[80];
-    int i, j, ii, dim;
+    char		file_name[264], keyword[80];
+    int           i, j, ii, dim;
+
+    sprintf(file_name, "Eiffel.mesh");
     if ((file = fopen(file_name, "r")) == NULL)
     {
         printf("error: file %s not found\n", file_name);
@@ -867,7 +867,7 @@ void InitialiserParametresGraphiques(void){
     ogl.Umax = 0.5;
     ogl.Vmin = -0.5;
     ogl.Vmax = 0.5;
-    ogl.Dmin = 1;
+    ogl.Dmin = 6.5;
     ogl.Dmax = 15;
 
     /* zoom */
