@@ -117,6 +117,9 @@ typedef struct opengl {
     /* materiau */
     Material plastic, copper, steel, *current_mat;
 
+    /*shrink value*/
+    float shrink;
+
 } Opengl;
 
 
@@ -541,6 +544,44 @@ void TracerTriangleUnique(int k){
     }
 }
 /**
+ * @brief       Rend un triangle avec un shrink
+ * 
+ * Cette fonction ajoute le triangle donné au tracé en utilisant glVertex3f.
+ * Elle peut être utilisée en mode uni ou en mode dégradé
+ * 
+ * @note        Cette fonction suppose que le contexte OpenGL est actif.
+ */
+void TracerTriangleUniqueShrink(int k){ 
+    int j, virt_base, real_base;
+    float Gx = 0.0f, Gy = 0.0f, Gz = 0.0f;
+    float Sx, Sy, Sz;
+
+    // 1. Calcul du barycentre G
+    for (j = 0; j < 3; j++){
+        virt_base = msh.triangles[k + j];
+        real_base = 3 * virt_base;
+        Gx += msh.vertices[real_base];
+        Gy += msh.vertices[real_base + 1];
+        Gz += msh.vertices[real_base + 2];
+    }
+    Gx /= 3.0f;  Gy /= 3.0f;  Gz /= 3.0f;
+
+    // 2. Pour chaque sommet : d'abord récupérer A, puis calculer A'
+    for (j = 0; j < 3; j++){
+        // a) retrouver le sommet et son offset
+        virt_base = msh.triangles[k + j];
+        real_base = 3 * virt_base;
+
+        // b) calcul du point réduit : A' = (1–s)*A + s*G
+        Sx = (1.0f - ogl.shrink) * msh.vertices[real_base]     + ogl.shrink * Gx;
+        Sy = (1.0f - ogl.shrink) * msh.vertices[real_base + 1] + ogl.shrink * Gy;
+        Sz = (1.0f - ogl.shrink) * msh.vertices[real_base + 2] + ogl.shrink * Gz;
+
+        // c) envoi à OpenGL
+        glVertex3f(Sx, Sy, Sz);
+    }
+}
+/**
  * @brief       Rend un triangle selon son index dans la table des triangles avec un ombrage de Phong
  * 
  * Cette fonction ajoute le triangle donné au tracé en utilisant glVertex3f.
@@ -568,6 +609,30 @@ void TracerTriangleUniquePhong(int k){
         );
     }
 }
+
+/**
+ * @brief       Rend l'objet courant selon le mode de tracé défini.
+ * 
+ * Cette fonction utilise le mode de tracé courant (champ ogl.renderMode)
+ * pour configurer OpenGL et dessiner l'objet 3D représenté par le mesh msh.
+ * Les différents modes qui l'utilisent incluent :
+ *  - FILAIRE_STPC
+ *  - FILAIRE_UNIE_ATPC
+ *  - SOLIDE_FILAIRE_ATPC
+ * 
+ * @note        Cette fonction suppose que le contexte OpenGL est actif.
+ */
+void TracerTrianglesShrink(void){
+    int i,k;
+    
+    glBegin(GL_TRIANGLES);
+    for (i=0; i < msh.number_of_triangles; i++){
+        k = 3*i;
+        TracerTriangleUniqueShrink(k);
+    }
+    glEnd();
+}
+
 /**
  * @brief       Rend l'objet courant selon le mode de tracé défini.
  * 
@@ -581,6 +646,12 @@ void TracerTriangleUniquePhong(int k){
  * @note        Cette fonction suppose que le contexte OpenGL est actif.
  */
 void TracerTrianglesBasique(void){
+    
+    if (ogl.shrink>0.01f){
+        TracerTrianglesShrink();
+        return;
+    }
+
     int i,k;
     
     glBegin(GL_TRIANGLES);
@@ -590,6 +661,9 @@ void TracerTrianglesBasique(void){
     }
     glEnd();
 }
+
+
+
 /**
  * @brief       Trace les triangles avec un dégradé linéaire de rouge à bleu.
  * 
@@ -736,12 +810,14 @@ void TracerObjet(void){
                 DecalageArriereActivation();
                     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
                     glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
+                    
                     TracerTrianglesBasique();  // Tracé en mode remplissage
                 DecalageArriereDesactivation();
                 
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
                 glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
-                TracerTrianglesBasique();  // Tracé en mode contour
+                TracerTrianglesBasique();
+                //TracerTrianglesBasique();  // Tracé en mode contour
             ZbufferDesactivation();
 
             }
@@ -1164,7 +1240,20 @@ void Keyboard(unsigned char key, int x, int y){
             glutPostRedisplay();
             MatriceProjection();
             break;
-
+        case 's':
+            ogl.shrink+=0.1;
+            if (ogl.shrink>1.0)
+                ogl.shrink=1.0;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case 'S':
+            ogl.shrink-=0.1;
+            if (ogl.shrink<0.0f)
+                ogl.shrink=0.0f;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
          
 
 
@@ -1408,7 +1497,7 @@ void InitialiserParametresGraphiques(void){
 
 
 
-    
+    ogl.shrink=0.1f;
 
 
 }
