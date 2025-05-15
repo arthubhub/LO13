@@ -26,6 +26,20 @@ void TracerTrianglesDegLineaire(void);
 void TracerTrianglesOmbrageConstant(void);
 void TracerTrianglesPhong(void);
 
+//modes de tracé
+void TracerFilaireSTPC(void);
+void TracerFilaireUnieATPC(void);
+void TracerSolideDegATPC(void);
+void TracerSolideFilaireAPTC(void);
+
+void TracerOmbrageConst(void);
+void TracerOmbrageConstFilaire(void);
+void TracerOmbrageFilaireConst(void);
+
+void TracerOmbragePhong(void);
+void TracerOmbragePhongFilaire(void);
+void TracerOmbrageFilairePhong(void);
+
 /* Main drawing dispatch based on ogl.renderMode */
 void TracerObjet(void);
 

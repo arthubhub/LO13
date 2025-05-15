@@ -69,6 +69,10 @@ typedef struct opengl {
 
     /* Shrink factor for face shrink effect */
     float    shrink;
+
+    /* option 1 : Plan*/
+
+
 } Opengl;
 
 /* Global instance */

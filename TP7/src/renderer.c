@@ -223,44 +223,43 @@ void TracerTrianglesPhong(void) {
 }
 
 
+void TracerFilaireSTPC(){
+    // Zbuffer -> non
+    // Polygone mode 
+    // couleur -> ogl.pencolorR,G,B
+    // Draw Triangles basic
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
+    TracerTrianglesBasique();
+    
+}
 
-void TracerObjet(void){
-    switch (ogl.renderMode) {
-        case FILAIRE_STPC: {
-            // Zbuffer -> non
-            // Polygone mode 
-            // couleur -> ogl.pencolorR,G,B
-            // Draw Triangles basic
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            TracerTrianglesBasique();
-            }
-            break;
-        case FILAIRE_UNIE_ATPC:{
-            // Zbuffer -> oui
-            // mode remplissage avec ogl.bgColorR,G,B
-            // reculer l'objet
-            // draw triangles basic
-            // avancer l'objet
-            // mode contours avec ogl.pencolorR,G,B
-            // draw triangles basic
-            // Zbuffer -> non
-            ZbufferActivation();
-                DecalageArriereActivation();
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
-                    
-                    TracerTrianglesBasique();  // Tracé en mode remplissage
-                DecalageArriereDesactivation();
-                
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
-                TracerTrianglesBasique();
-                //TracerTrianglesBasique();  // Tracé en mode contour
-            ZbufferDesactivation();
+void TracerFilaireUnieATPC(void){
+    // Zbuffer -> oui
+    // mode remplissage avec ogl.bgColorR,G,B
+    // reculer l'objet
+    // draw triangles basic
+    // avancer l'objet
+    // mode contours avec ogl.pencolorR,G,B
+    // draw triangles basic
+    // Zbuffer -> non
+    ZbufferActivation();
+        DecalageArriereActivation();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
+            
+            TracerTrianglesBasique();  // Tracé en mode remplissage
+        DecalageArriereDesactivation();
+        
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
+        TracerTrianglesBasique();
+        //TracerTrianglesBasique();  // Tracé en mode contour
+    ZbufferDesactivation();
+}
 
-            }
-            break;
-        case SOLIDE_DEG_ATPC:{
+
+void TracerSolideDegATPC(void){
             // Zbuffer -> oui
             // mode remplissage 
             // choisir couleur de début et de fin
@@ -270,122 +269,162 @@ void TracerObjet(void){
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             TracerTrianglesDegLineaire(); // Tracé en mode dégradé
             ZbufferDesactivation();
+}
+
+void TracerSolideFilaireAPTC(void){
+    // Zbuffer -> oui
+    // mode remplissage avec ogl.fillColorR,G,B
+    // reculer l'objet
+    // draw triangles basic
+    // avancer l'objet
+    // mode contours avec ogl.pencolorR,G,B
+    // draw triangles basic
+    // Zbuffer -> non
+
+    ZbufferActivation();
+    glColor3f(ogl.fillColorR, ogl.fillColorG, ogl.fillColorB);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        DecalageArriereActivation();
+            TracerTrianglesBasique();  // Tracé en mode remplissage 
+        DecalageArriereDesactivation();
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
+        TracerTrianglesBasique();  // Tracé en mode contour
+    ZbufferDesactivation();
+}
+
+void TracerOmbrageConst(void){
+    ZbufferActivation();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        /* ombrage */
+        ActivationSource() ;
+        AffectationMateriau() ;
+        glShadeModel(GL_FLAT) ; /* mode ombrage constant */
+            TracerTrianglesOmbrageConstant(); 
+        DesactivationSource() ;
+
+    ZbufferDesactivation();
+}
+
+void TracerOmbrageConstFilaire(void){
+    ZbufferActivation();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        DecalageArriereActivation();
+            ActivationSource() ;
+            AffectationMateriau() ;
+            glShadeModel(GL_FLAT) ; /* mode ombrage constant */
+                TracerTrianglesOmbrageConstant();  // Tracé en mode ombrage constant 
+            DesactivationSource() ;
+        DecalageArriereDesactivation();
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
+        TracerTrianglesBasique();  // Tracé en mode contour
+    ZbufferDesactivation();
+}
+
+void TracerOmbrageFilaireConst(void){
+    ZbufferActivation();
+        DecalageArriereActivation();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
+            TracerTrianglesBasique();  // Tracé en mode remplissage
+        DecalageArriereDesactivation();
+        
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        ActivationSource() ;
+        AffectationMateriau() ;
+        glShadeModel(GL_FLAT) ; /* mode ombrage constant */
+            TracerTrianglesOmbrageConstant();  // Tracé en mode contour
+        DesactivationSource() ;
+    ZbufferDesactivation();
+}
+void TracerOmbragePhong(void){
+    ZbufferActivation();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        /* ombrage */
+        ActivationSource() ;
+        AffectationMateriau() ;
+        glShadeModel(GL_SMOOTH) ; /* mode ombrage de Phong */
+            TracerTrianglesPhong(); 
+        DesactivationSource() ;
+
+    ZbufferDesactivation();
+}
+void TracerOmbragePhongFilaire(void){
+    ZbufferActivation();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        DecalageArriereActivation();
+            ActivationSource() ;
+            AffectationMateriau() ;
+            glShadeModel(GL_SMOOTH) ; /* mode ombrage de Phong */
+                TracerTrianglesPhong(); 
+            DesactivationSource() ;
+        DecalageArriereDesactivation();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
+        TracerTrianglesBasique();  // Tracé en mode contour
+    ZbufferDesactivation();
+}
+void TracerOmbrageFilairePhong(void){
+    ZbufferActivation();
+        DecalageArriereActivation();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
+            TracerTrianglesBasique();  // Tracé en mode remplissage
+        DecalageArriereDesactivation();
+        
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        ActivationSource() ;
+        AffectationMateriau() ;
+        glShadeModel(GL_SMOOTH) ; /* mode ombrage de Phong */
+            TracerTrianglesPhong(); 
+        DesactivationSource() ;
+    ZbufferDesactivation();
+}
+
+
+void TracerObjet(void){
+    switch (ogl.renderMode) {
+        case FILAIRE_STPC: {
+            TracerFilaireSTPC();
+            }
+            break;
+        case FILAIRE_UNIE_ATPC:{
+            TracerFilaireUnieATPC();
+            }
+            break;
+        case SOLIDE_DEG_ATPC:{
+            TracerSolideDegATPC();
             }
             break;
         case SOLIDE_FILAIRE_ATPC:{
-            // Zbuffer -> oui
-            // mode remplissage avec ogl.fillColorR,G,B
-            // reculer l'objet
-            // draw triangles basic
-            // avancer l'objet
-            // mode contours avec ogl.pencolorR,G,B
-            // draw triangles basic
-            // Zbuffer -> non
-
-            ZbufferActivation();
-            glColor3f(ogl.fillColorR, ogl.fillColorG, ogl.fillColorB);
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                DecalageArriereActivation();
-                    TracerTrianglesBasique();  // Tracé en mode remplissage 
-                DecalageArriereDesactivation();
-
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
-                TracerTrianglesBasique();  // Tracé en mode contour
-            ZbufferDesactivation();
+            TracerSolideFilaireAPTC();
             }
             break;
         case OMBRAGE_CONST:{
-            ZbufferActivation();
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                /* ombrage */
-                ActivationSource() ;
-                AffectationMateriau() ;
-                glShadeModel(GL_FLAT) ; /* mode ombrage constant */
-                    TracerTrianglesOmbrageConstant(); 
-                DesactivationSource() ;
- 
-            ZbufferDesactivation();
+            TracerOmbrageConst();
             }
             break;
         case OMBRAGE_CONST_FILAIRE:{
-            ZbufferActivation();
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                DecalageArriereActivation();
-                    ActivationSource() ;
-                    AffectationMateriau() ;
-                    glShadeModel(GL_FLAT) ; /* mode ombrage constant */
-                        TracerTrianglesOmbrageConstant();  // Tracé en mode ombrage constant 
-                    DesactivationSource() ;
-                DecalageArriereDesactivation();
-
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
-                TracerTrianglesBasique();  // Tracé en mode contour
-            ZbufferDesactivation();
+            TracerOmbrageConstFilaire();
             }
             break;
         case OMBRAGE_FILAIRE_CONST:{
-            ZbufferActivation();
-                DecalageArriereActivation();
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
-                    TracerTrianglesBasique();  // Tracé en mode remplissage
-                DecalageArriereDesactivation();
-                
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                ActivationSource() ;
-                AffectationMateriau() ;
-                glShadeModel(GL_FLAT) ; /* mode ombrage constant */
-                    TracerTrianglesOmbrageConstant();  // Tracé en mode contour
-                DesactivationSource() ;
-            ZbufferDesactivation();
+            TracerOmbrageFilaireConst();
             }
             break;
         case OMBRAGE_PHONG:{
-            ZbufferActivation();
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                /* ombrage */
-                ActivationSource() ;
-                AffectationMateriau() ;
-                glShadeModel(GL_SMOOTH) ; /* mode ombrage de Phong */
-                    TracerTrianglesPhong(); 
-                DesactivationSource() ;
- 
-            ZbufferDesactivation();
+            TracerOmbragePhong();
             }
             break;
         case OMBRAGE_PHONG_FILAIRE:{
-            ZbufferActivation();
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                DecalageArriereActivation();
-                    ActivationSource() ;
-                    AffectationMateriau() ;
-                    glShadeModel(GL_SMOOTH) ; /* mode ombrage de Phong */
-                        TracerTrianglesPhong(); 
-                    DesactivationSource() ;
-                DecalageArriereDesactivation();
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
-                TracerTrianglesBasique();  // Tracé en mode contour
-            ZbufferDesactivation();
+            TracerOmbragePhongFilaire();
             }
             break;
         case OMBRAGE_FILAIRE_PHONG:{
-            ZbufferActivation();
-                DecalageArriereActivation();
-                    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                    glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
-                    TracerTrianglesBasique();  // Tracé en mode remplissage
-                DecalageArriereDesactivation();
-                
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                ActivationSource() ;
-                AffectationMateriau() ;
-                glShadeModel(GL_SMOOTH) ; /* mode ombrage de Phong */
-                    TracerTrianglesPhong(); 
-                DesactivationSource() ;
-            ZbufferDesactivation();
+            TracerOmbrageFilairePhong();
             }
             break;
 
