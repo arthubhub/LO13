@@ -21,7 +21,7 @@ void TracerTriangleUniquePhong(int k);
 
 /* High-level triangle loops */
 void TracerTrianglesBasique(void);
-//void TracerTrianglesShrink(void);
+//void TracerTrianglesShrink(void); //<- ancienne fonction pour le shrink
 void TracerTrianglesDegLineaire(void);
 void TracerTrianglesOmbrageConstant(void);
 void TracerTrianglesPhong(void);

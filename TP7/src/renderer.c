@@ -260,15 +260,15 @@ void TracerFilaireUnieATPC(void){
 
 
 void TracerSolideDegATPC(void){
-            // Zbuffer -> oui
-            // mode remplissage 
-            // choisir couleur de début et de fin
-            // draw triangles mode degradé
-            // Zbuffer -> non
-            ZbufferActivation();
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            TracerTrianglesDegLineaire(); // Tracé en mode dégradé
-            ZbufferDesactivation();
+    // Zbuffer -> oui
+    // mode remplissage 
+    // choisir couleur de début et de fin
+    // draw triangles mode degradé
+    // Zbuffer -> non
+    ZbufferActivation();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    TracerTrianglesDegLineaire(); // Tracé en mode dégradé
+    ZbufferDesactivation();
 }
 
 void TracerSolideFilaireAPTC(void){
@@ -427,7 +427,5 @@ void TracerObjet(void){
             TracerOmbrageFilairePhong();
             }
             break;
-
-        
     }
 }

@@ -1,6 +1,7 @@
 // src/main.c
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "app.h"
 #include "mesh.h"
 #include "lighting.h"
@@ -9,6 +10,15 @@
 #include "input.h"
 
 int main(int argc, char **argv) {
+
+
+    if (argc !=2){
+        printf("ERROR : argc = %d\n\nUsage : %s <file.mesh>\n",argc,argv[0]);
+        exit(1);
+    }
+
+
+
     // Initialize GLUT
     InitialiserLibrairieGraphique(&argc, argv);
 
