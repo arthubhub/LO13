@@ -40,7 +40,13 @@ void TracerOmbragePhong(void);
 void TracerOmbragePhongFilaire(void);
 void TracerOmbrageFilairePhong(void);
 
+void DessinerPlans(void);
+
 /* Main drawing dispatch based on ogl.renderMode */
 void TracerObjet(void);
+void TracerPlans(void);
+
+void TracerProjections(void);
+void TracerProjectionY(void);
 
 #endif // RENDERER_H

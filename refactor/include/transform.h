@@ -15,7 +15,7 @@ void computeLastTransformation(void);
 /**
  * @brief Sets up the model-view matrix (identity, transforms, lookAt).
  */
-void MatriceVue(void);
+void MatriceVueObjet(void);
 
 /**
  * @brief Sets up the projection matrix using frustum and current zoom.

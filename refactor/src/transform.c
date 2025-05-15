@@ -46,7 +46,7 @@ void computeLastTransformation(){
     
 }
 
-void MatriceVue(void)
+void MatriceVueObjet(void)
 {
     /* pointer la matrice courante sur l’instance GL_MODELVIEW */
     glMatrixMode(GL_MODELVIEW);
@@ -87,7 +87,7 @@ void ViderMemoireEcran(void){
  */
 void Display(void) {
     EffacerEcran();
-    MatriceVue();
+    MatriceVueObjet();
     TracerObjet();
     ViderMemoireEcran();
 }

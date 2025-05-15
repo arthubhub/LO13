@@ -16,6 +16,20 @@ void InitialiserParametresGraphiques(void);
  */
 void CreationFenetreGraphique(void);
 
+void InitialiserWindow(void);
+void InitialiserRepereVue(void);
+void InitialiserCouleurs(void);
+void InitialiserPerspectiveProj(void);
+void InitialiserFacteursAnysotropie(void);
+void InitilaiserZoom(void);
+void InitialiserMatTransformGeometrique(void);
+void InitialiserTransformations(void);
+void InitialiserModeTrace(void);
+void InitialiserOption1_Plan(void);
+void InitialiserOption2_Projections(void);
+
+void ReinitialisationParamGraphiques(void);
+
 /**
  * @brief  Init OpenGL state (clear color, projection matrix, etc.).
  */

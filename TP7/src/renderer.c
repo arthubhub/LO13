@@ -1,5 +1,6 @@
 
 #include <GL/glut.h>
+#include <stdio.h>
 #include "renderer.h"
 #include "opengl_state.h"
 #include "mesh.h"
@@ -385,7 +386,74 @@ void TracerOmbrageFilairePhong(void){
 }
 
 
+void DessinerPlans(void){
+    int i;
+    int pas = 10; // >0
+    float decallage=-0.03f;
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
+    glBegin(GL_LINES);
+    {
+        for (i = 0 ; i<=pas ; i++){
+            float t = (float)i / pas;
+
+            // Plan z = 0 
+            glVertex3f(t, 0.0f, decallage);
+            glVertex3f(t, 1.0f, decallage);
+            glVertex3f(0.0f, t, decallage);
+            glVertex3f(1.0f, t, decallage);
+
+            // Plan y = 0
+            glVertex3f(t, decallage, 0.0f);
+            glVertex3f(t, decallage, 1.0f);
+            glVertex3f(0.0f, decallage, t);
+            glVertex3f(1.0f, decallage, t);
+
+            // Plan x = 0
+            glVertex3f(decallage, t, 0.0f);
+            glVertex3f(decallage, t, 1.0f);
+            glVertex3f(decallage, 0.0f, t);
+            glVertex3f(decallage, 1.0f, t);
+            
+        }
+    }
+    glEnd();
+
+
+}
+
+void TracerPlans(void){
+    if (ogl.mode_plan){
+        glPushMatrix();
+        {
+        MatriceVuePlan();
+        DessinerPlans();
+        }
+        glPopMatrix();
+    }
+
+}
+
+
+void TracerProjectionY(void){
+    glPushMatrix();
+    MatriceVueProjectionY();
+    TracerFilaireUnieATPC();
+    glPopMatrix();
+}
+
+
+void TracerProjections(void){
+    if (ogl.mode_projection){
+        TracerProjectionY();
+    }
+}
+
+
 void TracerObjet(void){
+    glPushMatrix();
+    MatriceVueObjet();
+
     switch (ogl.renderMode) {
         case FILAIRE_STPC: {
             TracerFilaireSTPC();
@@ -428,4 +496,5 @@ void TracerObjet(void){
             }
             break;
     }
+    glPopMatrix();
 }

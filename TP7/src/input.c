@@ -5,6 +5,7 @@
 #include "opengl_state.h"
 #include "transform.h"
 #include "renderer.h"
+#include "app.h"
 
 void Reshape(int w, int h){
     if (w>h){
@@ -110,16 +111,31 @@ void Keyboard(unsigned char key, int x, int y){
             MatriceProjection();
             break;
         case 's':
-            ogl.shrink+=0.1;
+            ogl.shrink+=0.02;
             if (ogl.shrink>0.9f)
                 ogl.shrink=0.9f;
             glutPostRedisplay();
             MatriceProjection();
             break;
         case 'S':
-            ogl.shrink-=0.1;
+            ogl.shrink-=0.02;
             if (ogl.shrink<0.0f)
                 ogl.shrink=0.0f;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case 'i':
+            ReinitialisationParamGraphiques();
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case 'P':
+            ogl.mode_plan=ogl.mode_plan^0x1;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case 'm':
+            ogl.mode_projection =ogl.mode_projection^0x1;
             glutPostRedisplay();
             MatriceProjection();
             break;

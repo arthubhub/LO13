@@ -71,6 +71,13 @@ typedef struct opengl {
     float    shrink;
 
     /* option 1 : Plan*/
+    int mode_plan;
+
+
+    /* option 2 : Projection*/
+    int mode_projection;
+    float Tchr_1[16];
+    float Px[16], Py[16], Pz[16];
 
 
 } Opengl;

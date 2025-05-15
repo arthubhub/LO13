@@ -46,7 +46,42 @@ void computeLastTransformation(){
     
 }
 
-void MatriceVue(void)
+void CalculateTchr_1(void){
+    float m[16];
+
+    glPushMatrix();
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
+        ogl.focalX, ogl.focalY, ogl.focalZ,
+        ogl.vertX, ogl.vertY, ogl.vertZ);
+    
+    glGetFloatv(GL_MODELVIEW_MATRIX, m);
+    
+    // transposée pour la mat 3*3 en haut à gauche
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            ogl.Tchr_1[i*4 + j] = m[j*4 + i];
+        }
+    }
+
+    // les 3 0 en bas
+    for (int col = 0; col < 3; ++col) {
+        ogl.Tchr_1[3*4 + col] = 0.0f;
+    }
+    //en bas à droite
+    ogl.Tchr_1[15] = 0.0f;
+
+    ogl.Tchr_1[3] = ogl.obsX-ogl.focalX;
+    ogl.Tchr_1[7] = ogl.obsY-ogl.focalY;
+    ogl.Tchr_1[11] = ogl.obsZ-ogl.focalZ;
+    glPopMatrix();
+
+}
+
+
+void MatriceVueObjet(void)
 {
     /* pointer la matrice courante sur l’instance GL_MODELVIEW */
     glMatrixMode(GL_MODELVIEW);
@@ -64,11 +99,47 @@ void MatriceVue(void)
         ogl.vertX, ogl.vertY, ogl.vertZ);
 }
 
+void MatriceVuePlan(void)
+{
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
+        ogl.focalX, ogl.focalY, ogl.focalZ,
+        ogl.vertX, ogl.vertY, ogl.vertZ);
+}
+
+void MatriceVueProjectionY(void){
+    // Calculer Tchr-1
+    CalculateTchr_1();
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // Appliquer Tchr
+    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
+        ogl.focalX, ogl.focalY, ogl.focalZ,
+        ogl.vertX, ogl.vertY, ogl.vertZ);
+    // Multiplier par Py initialisée au début
+    glMultMatrixf(ogl.Py);
+    // Multiplier par Tchr-1
+    glMultMatrixf(ogl.Tchr_1);
+    // Multiplier par Tg
+    glMultMatrixf(ogl.geometricTransformations);
+    // Appliquer Tchr
+    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
+        ogl.focalX, ogl.focalY, ogl.focalZ,
+        ogl.vertX, ogl.vertY, ogl.vertZ);
+
+}
+
+
 void MatriceProjection(void){
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glFrustum(ogl.Umin * ogl.fu * ogl.fzoom ,ogl.Umax * ogl.fu * ogl.fzoom,ogl.Vmin * ogl.fv * ogl.fzoom, ogl.Vmax * ogl.fv * ogl.fzoom,ogl.Dmin,ogl.Dmax);
 }
+
+
 
 void EffacerEcran(void){
 
@@ -87,7 +158,15 @@ void ViderMemoireEcran(void){
  */
 void Display(void) {
     EffacerEcran();
-    MatriceVue();
+    // Zbuffer On
+    ZbufferActivation();
+    // Plans
+    TracerPlans();
+    // Objet
     TracerObjet();
+    // Projections
+    TracerProjections();
+    // Zbuffer Off
+    ZbufferDesactivation();
     ViderMemoireEcran();
 }

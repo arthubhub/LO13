@@ -15,7 +15,15 @@ void computeLastTransformation(void);
 /**
  * @brief Sets up the model-view matrix (identity, transforms, lookAt).
  */
-void MatriceVue(void);
+void MatriceVueObjet(void);
+
+/**
+ * @brief Sets up the plan-view matrix (identity, transforms, lookAt).
+ */
+void MatriceVuePlan(void);
+
+void CalculateTchr_1(void);
+void MatriceVueProjectionY(void);
 
 /**
  * @brief Sets up the projection matrix using frustum and current zoom.

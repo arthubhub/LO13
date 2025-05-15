@@ -75,7 +75,7 @@ void TracerObjet(void){
 void EffacerEcran(void){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
-void MatriceVue(void){
+void MatriceVueObjet(void){
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(ogl.obsX,ogl.obsY,ogl.obsZ,
@@ -206,7 +206,7 @@ void MatriceProjection(void){
 }
 void Display(void){
     EffacerEcran();
-    MatriceVue(); // -> matricemode modelview , identité, lookat()
+    MatriceVueObjet(); // -> matricemode modelview , identité, lookat()
     TracerObjet(); // -> tracer les triangles
     ViderMemoireEcran(); // -> glflush 
 
