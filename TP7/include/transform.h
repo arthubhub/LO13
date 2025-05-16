@@ -22,8 +22,9 @@ void MatriceVueObjet(void);
  */
 void MatriceVuePlan(void);
 
-void CalculateTchr_1(void);
+void MatriceVueProjectionX(void);
 void MatriceVueProjectionY(void);
+void MatriceVueProjectionZ(void);
 
 /**
  * @brief Sets up the projection matrix using frustum and current zoom.

@@ -9,6 +9,27 @@
 #include "math_utils.h"
 
 
+
+/**
+ * @brief   Affiche une matrice 4×4 dans la console.
+ * @param   name  Nom à afficher avant la matrice (peut être NULL).
+ * @param   M     Matrice 4×4 stockée en row-major (M[row*4 + col]).
+ */
+void PrintMatrix4x4(const char *name, const float M[16]) {
+    if (name) {
+        printf("%s =\n", name);
+    }
+    for (int i = 0; i < 4; ++i) {
+        printf("[ ");
+        for (int j = 0; j < 4; ++j) {
+            printf("%8.4f", M[i*4 + j]);
+            if (j < 3) printf(", ");
+        }
+        printf(" ]\n");
+    }
+}
+
+
 void  ZbufferActivation (void) { 
     glEnable (GL_DEPTH_TEST); 
 }
@@ -434,25 +455,45 @@ void TracerPlans(void){
 
 }
 
-
+void TracerProjectionX(void){
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    MatriceVueProjectionX();
+    glColor3f(1.0, 0.6, 0.6);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    TracerTrianglesBasique();
+    glPopMatrix();
+}
 void TracerProjectionY(void){
+    glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     MatriceVueProjectionY();
-    TracerFilaireUnieATPC();
+    glColor3f(0.6, 1.0, 0.6);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    TracerTrianglesBasique();
+    glPopMatrix();
+}
+void TracerProjectionZ(void){
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    MatriceVueProjectionZ();
+    glColor3f(0.6, 0.6, 1.0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    TracerTrianglesBasique();
     glPopMatrix();
 }
 
-
 void TracerProjections(void){
     if (ogl.mode_projection){
-        TracerProjectionY();
+        TracerProjectionX(); // on trace la projections sur X
+        TracerProjectionY(); // on trace la projections sur Y
+        TracerProjectionZ(); // on trace la projections sur Z
     }
 }
 
 
 void TracerObjet(void){
-    glPushMatrix();
-    MatriceVueObjet();
+    
 
     switch (ogl.renderMode) {
         case FILAIRE_STPC: {
@@ -496,5 +537,4 @@ void TracerObjet(void){
             }
             break;
     }
-    glPopMatrix();
 }

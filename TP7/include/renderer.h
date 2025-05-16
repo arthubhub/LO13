@@ -4,6 +4,8 @@
 #include "mesh.h"
 #include "opengl_state.h"
 
+void PrintMatrix4x4(const char *name, const float M[16]);
+
 /* Z-buffer control */
 void ZbufferActivation(void);
 void ZbufferDesactivation(void);
@@ -47,6 +49,8 @@ void TracerObjet(void);
 void TracerPlans(void);
 
 void TracerProjections(void);
+void TracerProjectionX(void);
 void TracerProjectionY(void);
+void TracerProjectionZ(void);
 
 #endif // RENDERER_H

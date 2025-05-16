@@ -103,27 +103,24 @@ void InitialiserOption1_Plan(void){
 void InitialiserOption2_Projections(void){
     float seuil = -0.1;
     ogl.mode_projection = 0;
-    float Tchr_1[16];
-    float Px[16], Py[16], Pz[16];
-    memset(Px, 0, 16 * sizeof(float));
-    memset(Py, 0, 16 * sizeof(float));
-    memset(Pz, 0, 16 * sizeof(float));
-    memset(Tchr_1, 0, 16 * sizeof(float));
+    memset(ogl.Px, 0, 16 * sizeof(float));
+    memset(ogl.Py, 0, 16 * sizeof(float));
+    memset(ogl.Pz, 0, 16 * sizeof(float));
 
-    Px[3]  = seuil; 
-    Px[5]  = 1.0f;
-    Px[10] = 1.0f;
-    Px[15] = 1.0f;  
+    ogl.Px[3]  = seuil; 
+    ogl.Px[5]  = 1.0f;
+    ogl.Px[10] = 1.0f;
+    ogl.Px[15] = 1.0f;  
 
-    Py[0]  = 1.0f; 
-    Py[7]  = seuil;
-    Py[10] = 1.0f;
-    Py[15] = 1.0f;  
+    ogl.Py[0]  = 1.0f; 
+    ogl.Py[7]  = seuil;
+    ogl.Py[10] = 1.0f;
+    ogl.Py[15] = 1.0f;  
 
-    Pz[0]  = 1.0f; 
-    Pz[5]  = 1.0f;
-    Pz[11] = seuil;
-    Pz[15] = 1.0f;  
+    ogl.Pz[0]  = 1.0f; 
+    ogl.Pz[5]  = 1.0f;
+    ogl.Pz[11] = seuil;
+    ogl.Pz[15] = 1.0f;  
 
 }
 
@@ -144,6 +141,34 @@ void ReinitialisationParamGraphiques(void) {
     InitialiserMateriaux();
 }
 
+
+void InitialiserChangementRepere(void){
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ, ogl.focalX, ogl.focalY, ogl.focalZ, ogl.vertX, ogl.vertY, ogl.vertZ);
+    glGetFloatv(GL_MODELVIEW_MATRIX,ogl.Tchr);
+
+    
+    // tout = 0.0f
+    memset(ogl.Tchr_1, 0.0f, 16 * sizeof(float));
+
+    //transposer la mat 3*3 en haut à gauche
+    for (int i=0; i<3; i++){
+        for (int j=0; j<3;j++){
+            ogl.Tchr_1[i+4*j] = ogl.Tchr[4*i+j];
+        }
+    }
+    // Tout en bas à droite
+    ogl.Tchr_1[15]=1.0;
+
+    // ligne du bas
+    ogl.Tchr_1[12]=ogl.obsX;
+    ogl.Tchr_1[13]=ogl.obsY;
+    ogl.Tchr_1[14]=ogl.obsZ;
+
+
+}
 
 void InitialiserParametresGraphiques(void) {
     /* fenetre */
@@ -168,6 +193,7 @@ void InitialiserParametresGraphiques(void) {
 
     InitialiserMatTransformGeometrique();
     InitialiserTransformations();
+ 
 
 
 
@@ -203,6 +229,7 @@ void InitialiserEnvironnementGraphique(void) {
     glClearColor(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB, 0.0f);
     glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
     MatriceProjection();
+    InitialiserChangementRepere(); // on le met ici car sinon la fenetre n'est pas encore initialisée
 }
 
 void BoucleInfinie(void) {

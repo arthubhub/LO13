@@ -76,6 +76,7 @@ typedef struct opengl {
 
     /* option 2 : Projection*/
     int mode_projection;
+    float Tchr[16];
     float Tchr_1[16];
     float Px[16], Py[16], Pz[16];
 
