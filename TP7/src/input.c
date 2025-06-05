@@ -135,10 +135,36 @@ void Keyboard(unsigned char key, int x, int y){
             MatriceProjection();
             break;
         case 'm':
-            ogl.mode_projection =ogl.mode_projection^0x1;
+            if (ogl.proj_mode==PROJECTION){
+                ogl.proj_mode=NONE;
+            }
+            else {
+                ogl.proj_mode=PROJECTION;
+            }
             glutPostRedisplay();
             MatriceProjection();
             break;
+        case 'l':
+            if (ogl.proj_mode==MIROIRS){
+                ogl.proj_mode=NONE;
+            }
+            else {
+                ogl.proj_mode=MIROIRS;
+            }
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        case 'k':
+            if (ogl.proj_mode==OMBRE){
+                ogl.proj_mode=NONE;
+            }
+            else {
+                ogl.proj_mode=OMBRE;
+            }
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+        
 
 
         default:

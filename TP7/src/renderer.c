@@ -483,21 +483,158 @@ void TracerProjectionZ(void){
     glPopMatrix();
 }
 
+void DessinerCadres(void) {
+    DecalageArriereActivation();
+
+    // On reste en mode "plein", et on choisit la couleur du grand carré (anneau).
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glColor3f(1.0f, 0.0f, 1.0f); // rose par exemple
+
+    // 1) Plan YZ (X = 0)
+    glBegin(GL_TRIANGLES);
+        // Bande du BAS  (Y ∈ [−5, −0.5], Z ∈ [−5, +5])
+        glVertex3f(0.0f, -5.0f, -5.0f);
+        glVertex3f(0.0f, -5.0f,  5.0f);
+        glVertex3f(0.0f, 0.0f,  5.0f);
+
+        glVertex3f(0.0f, -5.0f, -5.0f);
+        glVertex3f(0.0f, 0.0f,  5.0f);
+        glVertex3f(0.0f, 0.0f, -5.0f);
+
+        // Bande du HAUT   (Y ∈ [ +0.5, +5], Z ∈ [−5, +5])
+        glVertex3f(0.0f,  1.0f, -5.0f);
+        glVertex3f(0.0f,  1.0f,  5.0f);
+        glVertex3f(0.0f,  5.0f,  5.0f);
+
+        glVertex3f(0.0f,  1.0f, -5.0f);
+        glVertex3f(0.0f,  5.0f,  5.0f);
+        glVertex3f(0.0f,  5.0f, -5.0f);
+
+        // Bande GAUCHE    (Y ∈ [−0.5, +0.5], Z ∈ [−5, −0.5])
+        glVertex3f(0.0f, 0.0f, -5.0f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f,  1.0f, 0.0f);
+
+        glVertex3f(0.0f, 0.0f, -5.0f);
+        glVertex3f(0.0f,  1.0f, 0.0f);
+        glVertex3f(0.0f,  1.0f, -5.0f);
+
+        // Bande DROITE    (Y ∈ [−0.5, +0.5], Z ∈ [ +0.5, +5])
+        glVertex3f(0.0f, 0.0f,  1.0f);
+        glVertex3f(0.0f, 0.0f,  5.0f);
+        glVertex3f(0.0f,  1.0f,  5.0f);
+
+        glVertex3f(0.0f, 0.0f,  1.0f);
+        glVertex3f(0.0f,  1.0f,  5.0f);
+        glVertex3f(0.0f,  1.0f,  1.0f);
+    glEnd();
+    // 2) Plan XZ (Y = 0)
+    glBegin(GL_TRIANGLES);
+        // Bande du « bas » en Z  (Z ∈ [−5, −0.5], X ∈ [−5, +5])
+        glVertex3f(-5.0f, 0.0f, -5.0f);
+        glVertex3f( 5.0f, 0.0f, -5.0f);
+        glVertex3f( 5.0f, 0.0f, 0.0f);
+
+        glVertex3f(-5.0f, 0.0f, -5.0f);
+        glVertex3f( 5.0f, 0.0f, 0.0f);
+        glVertex3f(-5.0f, 0.0f, 0.0f);
+
+        // Bande du « haut » en Z  (Z ∈ [ +0.5, +5], X ∈ [−5, +5])
+        glVertex3f(-5.0f, 0.0f,  1.0f);
+        glVertex3f( 5.0f, 0.0f,  1.0f);
+        glVertex3f( 5.0f, 0.0f,  5.0f);
+
+        glVertex3f(-5.0f, 0.0f,  1.0f);
+        glVertex3f( 5.0f, 0.0f,  5.0f);
+        glVertex3f(-5.0f, 0.0f,  5.0f);
+
+        // Bande GAUCHE en X (X ∈ [−5, −0.5], Z ∈ [−0.5, +0.5])
+        glVertex3f(-5.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 0.0f,  1.0f);
+
+        glVertex3f(-5.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 0.0f,  1.0f);
+        glVertex3f(-5.0f, 0.0f,  1.0f);
+
+        // Bande DROITE en X (X ∈ [ +0.5, +5], Z ∈ [−0.5, +0.5])
+        glVertex3f( 1.0f, 0.0f, 0.0f);
+        glVertex3f( 5.0f, 0.0f, 0.0f);
+        glVertex3f( 5.0f, 0.0f,  1.0f);
+
+        glVertex3f( 1.0f, 0.0f, 0.0f);
+        glVertex3f( 5.0f, 0.0f,  1.0f);
+        glVertex3f( 1.0f, 0.0f,  1.0f);
+    glEnd();
+    // 3) Plan XY (Z = 0)
+    glBegin(GL_TRIANGLES);
+        // Bande du BAS  en Y (Y ∈ [−5, −0.5], X ∈ [−5, +5])
+        glVertex3f(-5.0f, -5.0f, 0.0f);
+        glVertex3f( 5.0f, -5.0f, 0.0f);
+        glVertex3f( 5.0f, 0.0f, 0.0f);
+
+        glVertex3f(-5.0f, -5.0f, 0.0f);
+        glVertex3f( 5.0f, 0.0f, 0.0f);
+        glVertex3f(-5.0f, 0.0f, 0.0f);
+
+        // Bande du HAUT  en Y (Y ∈ [ +0.5, +5], X ∈ [−5, +5])
+        glVertex3f(-5.0f,  1.0f, 0.0f);
+        glVertex3f( 5.0f,  1.0f, 0.0f);
+        glVertex3f( 5.0f,  5.0f, 0.0f);
+
+        glVertex3f(-5.0f,  1.0f, 0.0f);
+        glVertex3f( 5.0f,  5.0f, 0.0f);
+        glVertex3f(-5.0f,  5.0f, 0.0f);
+
+        // Bande GAUCHE en X (X ∈ [−5, −0.5], Y ∈ [−0.5, +0.5])
+        glVertex3f(-5.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f,  1.0f, 0.0f);
+
+        glVertex3f(-5.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f,  1.0f, 0.0f);
+        glVertex3f(-5.0f,  1.0f, 0.0f);
+
+        // Bande DROITE en X (X ∈ [ +0.5, +5], Y ∈ [−0.5, +0.5])
+        glVertex3f( 1.0f, 0.0f, 0.0f);
+        glVertex3f( 5.0f, 0.0f, 0.0f);
+        glVertex3f( 5.0f,  1.0f, 0.0f);
+
+        glVertex3f( 1.0f, 0.0f, 0.0f);
+        glVertex3f( 5.0f,  1.0f, 0.0f);
+        glVertex3f( 1.0f,  1.0f, 0.0f);
+    glEnd();
+
+    DecalageArriereDesactivation();
+}
+
+
+void TracerCadres(void){
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+        MatriceVuePlan();
+        DessinerCadres();
+    glPopMatrix();
+}
+
+
 void TracerProjections(void){
-    if (ogl.mode_projection){
-        
+    if (ogl.proj_mode==PROJECTION){
         TracerProjectionX(); // on trace la projections sur X
         TracerProjectionY(); // on trace la projections sur Y
         TracerProjectionZ(); // on trace la projections sur Z
-        
-        
+    }
+    else if (ogl.proj_mode==MIROIRS){
+        TracerCadres();
+    }
+    else if (ogl.proj_mode==OMBRE){
+
     }
 }
 
 
 void TracerObjet(void){
-    
-
+    MatriceVueObjet();
     switch (ogl.renderMode) {
         case FILAIRE_STPC: {
             TracerFilaireSTPC();

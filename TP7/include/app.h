@@ -27,6 +27,7 @@ void InitialiserTransformations(void);
 void InitialiserModeTrace(void);
 void InitialiserOption1_Plan(void);
 void InitialiserOption2_Projections(void);
+void InitialiserOption3_Projections(void);
 void InitialiserChangementRepere(void);
 
 

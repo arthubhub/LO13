@@ -163,7 +163,6 @@ void Display(void) {
     // Plans
     TracerPlans();
     // Objet
-    MatriceVueObjet();
     TracerObjet();
     // Projections
     TracerProjections();

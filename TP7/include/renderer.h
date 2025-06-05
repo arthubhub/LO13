@@ -53,4 +53,7 @@ void TracerProjectionX(void);
 void TracerProjectionY(void);
 void TracerProjectionZ(void);
 
+void DessinerCadres(void);
+void TracerCadres(void);
+
 #endif // RENDERER_H
