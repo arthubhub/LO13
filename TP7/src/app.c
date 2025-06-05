@@ -101,25 +101,32 @@ void InitialiserOption1_Plan(void){
     ogl.mode_plan = 0;
 }
 void InitialiserOption2_Projections(void){
-    float seuil = -0.1;
+    float seuil = -0.03f;
     ogl.mode_projection = 0;
     memset(ogl.Px, 0, 16 * sizeof(float));
     memset(ogl.Py, 0, 16 * sizeof(float));
     memset(ogl.Pz, 0, 16 * sizeof(float));
 
-    ogl.Px[3]  = seuil; 
+/*
+0  4  8  12
+1  5  9  13
+2  6  10 14
+3  7  11 15
+*/
+
+    ogl.Px[12]  = seuil; 
     ogl.Px[5]  = 1.0f;
     ogl.Px[10] = 1.0f;
     ogl.Px[15] = 1.0f;  
 
     ogl.Py[0]  = 1.0f; 
-    ogl.Py[7]  = seuil;
+    ogl.Py[13]  = seuil;
     ogl.Py[10] = 1.0f;
     ogl.Py[15] = 1.0f;  
 
     ogl.Pz[0]  = 1.0f; 
     ogl.Pz[5]  = 1.0f;
-    ogl.Pz[11] = seuil;
+    ogl.Pz[14] = seuil;
     ogl.Pz[15] = 1.0f;  
 
 }
