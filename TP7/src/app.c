@@ -101,25 +101,32 @@ void InitialiserOption1_Plan(void){
     ogl.mode_plan = 0;
 }
 void InitialiserOption2_Projections(void){
-    float seuil = -0.1;
+    float seuil = -0.03f;
     ogl.mode_projection = 0;
     memset(ogl.Px, 0, 16 * sizeof(float));
     memset(ogl.Py, 0, 16 * sizeof(float));
     memset(ogl.Pz, 0, 16 * sizeof(float));
 
-    ogl.Px[3]  = seuil; 
+/*
+0  4  8  12
+1  5  9  13
+2  6  10 14
+3  7  11 15
+*/
+
+    ogl.Px[12]  = seuil; 
     ogl.Px[5]  = 1.0f;
     ogl.Px[10] = 1.0f;
     ogl.Px[15] = 1.0f;  
 
     ogl.Py[0]  = 1.0f; 
-    ogl.Py[7]  = seuil;
+    ogl.Py[13]  = seuil;
     ogl.Py[10] = 1.0f;
     ogl.Py[15] = 1.0f;  
 
     ogl.Pz[0]  = 1.0f; 
     ogl.Pz[5]  = 1.0f;
-    ogl.Pz[11] = seuil;
+    ogl.Pz[14] = seuil;
     ogl.Pz[15] = 1.0f;  
 
 }
@@ -148,7 +155,7 @@ void InitialiserChangementRepere(void){
     glLoadIdentity();
     gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ, ogl.focalX, ogl.focalY, ogl.focalZ, ogl.vertX, ogl.vertY, ogl.vertZ);
     glGetFloatv(GL_MODELVIEW_MATRIX,ogl.Tchr);
-
+    float M[16];
     
     // tout = 0.0f
     memset(ogl.Tchr_1, 0.0f, 16 * sizeof(float));
@@ -162,12 +169,15 @@ void InitialiserChangementRepere(void){
     // Tout en bas à droite
     ogl.Tchr_1[15]=1.0;
 
-    // ligne du bas
+    // ligne de droite
     ogl.Tchr_1[12]=ogl.obsX;
     ogl.Tchr_1[13]=ogl.obsY;
     ogl.Tchr_1[14]=ogl.obsZ;
+    glMultMatrixf(ogl.Tchr_1);
 
+    glGetFloatv(GL_MODELVIEW_MATRIX,M);
 
+    PrintMatrix4x4("Tchr_1*Tchr",M);
 }
 
 void InitialiserParametresGraphiques(void) {
