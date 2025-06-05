@@ -46,6 +46,9 @@ void computeLastTransformation(){
     
 }
 
+
+
+
 void MatriceVueObjet(void)
 {
     /* pointer la matrice courante sur l’instance GL_MODELVIEW */
@@ -64,11 +67,79 @@ void MatriceVueObjet(void)
         ogl.vertX, ogl.vertY, ogl.vertZ);
 }
 
+void MatriceVuePlan(void)
+{
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
+        ogl.focalX, ogl.focalY, ogl.focalZ,
+        ogl.vertX, ogl.vertY, ogl.vertZ);
+}
+
+void MatriceVueProjectionX(void){
+    glLoadIdentity();
+    // Appliquer Tchr
+    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
+        ogl.focalX, ogl.focalY, ogl.focalZ,
+        ogl.vertX, ogl.vertY, ogl.vertZ);
+    // Multiplier par Py initialisée au début
+    glMultMatrixf(ogl.Px);
+    PrintMatrix4x4("ogl.Px", ogl.Px);
+    // Multiplier par Tchr-1
+    glMultMatrixf(ogl.Tchr_1);
+    PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
+    PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
+    // Multiplier par Tg
+    glMultMatrixf(ogl.geometricTransformations);
+    // Remultiplier par Tchr
+    glMultMatrixf(ogl.Tchr);
+}
+void MatriceVueProjectionY(void){
+    glLoadIdentity();
+    // Appliquer Tchr
+    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
+        ogl.focalX, ogl.focalY, ogl.focalZ,
+        ogl.vertX, ogl.vertY, ogl.vertZ);
+    // Multiplier par Py initialisée au début
+    glMultMatrixf(ogl.Py);
+    PrintMatrix4x4("ogl.Py", ogl.Py);
+    // Multiplier par Tchr-1
+    glMultMatrixf(ogl.Tchr_1);
+    PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
+    PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
+    // Multiplier par Tg
+    glMultMatrixf(ogl.geometricTransformations);
+    // Remultiplier par Tchr
+    glMultMatrixf(ogl.Tchr);
+}
+void MatriceVueProjectionZ(void){
+    glLoadIdentity();
+    // Appliquer Tchr
+    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
+        ogl.focalX, ogl.focalY, ogl.focalZ,
+        ogl.vertX, ogl.vertY, ogl.vertZ);
+    // Multiplier par Pz initialisée au début
+    glMultMatrixf(ogl.Pz);
+    PrintMatrix4x4("ogl.Pz", ogl.Pz);
+    // Multiplier par Tchr-1
+    glMultMatrixf(ogl.Tchr_1);
+    PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
+    PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
+    // Multiplier par Tg
+    glMultMatrixf(ogl.geometricTransformations);
+    // Remultiplier par Tchr
+    glMultMatrixf(ogl.Tchr);
+}
+
+
 void MatriceProjection(void){
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glFrustum(ogl.Umin * ogl.fu * ogl.fzoom ,ogl.Umax * ogl.fu * ogl.fzoom,ogl.Vmin * ogl.fv * ogl.fzoom, ogl.Vmax * ogl.fv * ogl.fzoom,ogl.Dmin,ogl.Dmax);
+    glMatrixMode(GL_MODELVIEW);
 }
+
+
 
 void EffacerEcran(void){
 
@@ -87,7 +158,16 @@ void ViderMemoireEcran(void){
  */
 void Display(void) {
     EffacerEcran();
+    // Zbuffer On
+    ZbufferActivation();
+    // Plans
+    TracerPlans();
+    // Objet
     MatriceVueObjet();
     TracerObjet();
+    // Projections
+    TracerProjections();
+    // Zbuffer Off
+    ZbufferDesactivation();
     ViderMemoireEcran();
 }

@@ -145,7 +145,7 @@ void EffacerEcran(void){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
 }
-void MatriceVue(void)
+void MatriceVueObjet(void)
 {
     /* pointer la matrice courante sur l’instance GL_MODELVIEW */
     glMatrixMode(GL_MODELVIEW) ;
@@ -288,7 +288,7 @@ void MatriceProjection(void){
 }
 void Display(void){
     EffacerEcran();
-    MatriceVue(); // -> matricemode modelview , identité, lookat()
+    MatriceVueObjet(); // -> matricemode modelview , identité, lookat()
         // test
     ZbufferActivation();
     TracerObjet(); // -> tracer les triangles
