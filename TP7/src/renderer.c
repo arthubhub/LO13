@@ -22,7 +22,7 @@ void PrintMatrix4x4(const char *name, const float M[16]) {
     for (int i = 0; i < 4; ++i) {
         printf("[ ");
         for (int j = 0; j < 4; ++j) {
-            printf("%8.4f", M[i*4 + j]);
+            printf("%8.4f", M[j*4 + i]);
             if (j < 3) printf(", ");
         }
         printf(" ]\n");
@@ -265,7 +265,7 @@ void TracerFilaireUnieATPC(void){
     // mode contours avec ogl.pencolorR,G,B
     // draw triangles basic
     // Zbuffer -> non
-    ZbufferActivation();
+    //ZbufferActivation();
         DecalageArriereActivation();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
@@ -277,7 +277,7 @@ void TracerFilaireUnieATPC(void){
         glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
         TracerTrianglesBasique();
         //TracerTrianglesBasique();  // Tracé en mode contour
-    ZbufferDesactivation();
+    //ZbufferDesactivation();
 }
 
 
@@ -287,10 +287,10 @@ void TracerSolideDegATPC(void){
     // choisir couleur de début et de fin
     // draw triangles mode degradé
     // Zbuffer -> non
-    ZbufferActivation();
+    //ZbufferActivation();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     TracerTrianglesDegLineaire(); // Tracé en mode dégradé
-    ZbufferDesactivation();
+    //ZbufferDesactivation();
 }
 
 void TracerSolideFilaireAPTC(void){
@@ -303,7 +303,7 @@ void TracerSolideFilaireAPTC(void){
     // draw triangles basic
     // Zbuffer -> non
 
-    ZbufferActivation();
+    //ZbufferActivation();
     glColor3f(ogl.fillColorR, ogl.fillColorG, ogl.fillColorB);
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         DecalageArriereActivation();
@@ -313,11 +313,11 @@ void TracerSolideFilaireAPTC(void){
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
         TracerTrianglesBasique();  // Tracé en mode contour
-    ZbufferDesactivation();
+    //ZbufferDesactivation();
 }
 
 void TracerOmbrageConst(void){
-    ZbufferActivation();
+    //ZbufferActivation();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         /* ombrage */
         ActivationSource() ;
@@ -326,11 +326,11 @@ void TracerOmbrageConst(void){
             TracerTrianglesOmbrageConstant(); 
         DesactivationSource() ;
 
-    ZbufferDesactivation();
+    //ZbufferDesactivation();
 }
 
 void TracerOmbrageConstFilaire(void){
-    ZbufferActivation();
+    //ZbufferActivation();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         DecalageArriereActivation();
             ActivationSource() ;
@@ -343,11 +343,11 @@ void TracerOmbrageConstFilaire(void){
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
         TracerTrianglesBasique();  // Tracé en mode contour
-    ZbufferDesactivation();
+    //ZbufferDesactivation();
 }
 
 void TracerOmbrageFilaireConst(void){
-    ZbufferActivation();
+    //ZbufferActivation();
         DecalageArriereActivation();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
@@ -360,10 +360,10 @@ void TracerOmbrageFilaireConst(void){
         glShadeModel(GL_FLAT) ; /* mode ombrage constant */
             TracerTrianglesOmbrageConstant();  // Tracé en mode contour
         DesactivationSource() ;
-    ZbufferDesactivation();
+    //ZbufferDesactivation();
 }
 void TracerOmbragePhong(void){
-    ZbufferActivation();
+    //ZbufferActivation();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         /* ombrage */
         ActivationSource() ;
@@ -372,10 +372,10 @@ void TracerOmbragePhong(void){
             TracerTrianglesPhong(); 
         DesactivationSource() ;
 
-    ZbufferDesactivation();
+    //ZbufferDesactivation();
 }
 void TracerOmbragePhongFilaire(void){
-    ZbufferActivation();
+    //ZbufferActivation();
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         DecalageArriereActivation();
             ActivationSource() ;
@@ -387,10 +387,10 @@ void TracerOmbragePhongFilaire(void){
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glColor3f(ogl.penColorR, ogl.penColorG, ogl.penColorB);
         TracerTrianglesBasique();  // Tracé en mode contour
-    ZbufferDesactivation();
+    //ZbufferDesactivation();
 }
 void TracerOmbrageFilairePhong(void){
-    ZbufferActivation();
+    //ZbufferActivation();
         DecalageArriereActivation();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
@@ -403,7 +403,7 @@ void TracerOmbrageFilairePhong(void){
         glShadeModel(GL_SMOOTH) ; /* mode ombrage de Phong */
             TracerTrianglesPhong(); 
         DesactivationSource() ;
-    ZbufferDesactivation();
+    //ZbufferDesactivation();
 }
 
 
@@ -435,6 +435,7 @@ void DessinerPlans(void){
             glVertex3f(decallage, t, 1.0f);
             glVertex3f(decallage, 0.0f, t);
             glVertex3f(decallage, 1.0f, t);
+            printf("Plans : t = %f\n",t);
             
         }
     }
@@ -485,9 +486,12 @@ void TracerProjectionZ(void){
 
 void TracerProjections(void){
     if (ogl.mode_projection){
+        //ZbufferActivation();
         TracerProjectionX(); // on trace la projections sur X
         TracerProjectionY(); // on trace la projections sur Y
         TracerProjectionZ(); // on trace la projections sur Z
+        //ZbufferDesactivation();
+        
     }
 }
 

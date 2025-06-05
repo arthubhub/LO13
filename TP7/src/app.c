@@ -148,7 +148,7 @@ void InitialiserChangementRepere(void){
     glLoadIdentity();
     gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ, ogl.focalX, ogl.focalY, ogl.focalZ, ogl.vertX, ogl.vertY, ogl.vertZ);
     glGetFloatv(GL_MODELVIEW_MATRIX,ogl.Tchr);
-
+    float M[16];
     
     // tout = 0.0f
     memset(ogl.Tchr_1, 0.0f, 16 * sizeof(float));
@@ -162,12 +162,15 @@ void InitialiserChangementRepere(void){
     // Tout en bas à droite
     ogl.Tchr_1[15]=1.0;
 
-    // ligne du bas
+    // ligne de droite
     ogl.Tchr_1[12]=ogl.obsX;
     ogl.Tchr_1[13]=ogl.obsY;
     ogl.Tchr_1[14]=ogl.obsZ;
+    glMultMatrixf(ogl.Tchr_1);
 
+    glGetFloatv(GL_MODELVIEW_MATRIX,M);
 
+    PrintMatrix4x4("Tchr_1*Tchr",M);
 }
 
 void InitialiserParametresGraphiques(void) {
