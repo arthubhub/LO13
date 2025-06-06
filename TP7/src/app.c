@@ -95,6 +95,7 @@ void InitialiserTransformations(void){
 }
 void InitialiserModeTrace(void){
     ogl.renderMode = FILAIRE_STPC;
+    ogl.proj_mode = NONE;
 }
 
 void InitialiserOption1_Plan(void){
@@ -102,18 +103,15 @@ void InitialiserOption1_Plan(void){
 }
 void InitialiserOption2_Projections(void){
     float seuil = -0.03f;
-    ogl.mode_projection = 0;
     memset(ogl.Px, 0, 16 * sizeof(float));
     memset(ogl.Py, 0, 16 * sizeof(float));
     memset(ogl.Pz, 0, 16 * sizeof(float));
-
 /*
 0  4  8  12
 1  5  9  13
 2  6  10 14
 3  7  11 15
 */
-
     ogl.Px[12]  = seuil; 
     ogl.Px[5]  = 1.0f;
     ogl.Px[10] = 1.0f;
@@ -128,6 +126,45 @@ void InitialiserOption2_Projections(void){
     ogl.Pz[5]  = 1.0f;
     ogl.Pz[14] = seuil;
     ogl.Pz[15] = 1.0f;  
+}
+
+void InitialiserOption3_Projections(void){
+    memset(ogl.Sx, 0, 16 * sizeof(float));
+    memset(ogl.Sx, 0, 16 * sizeof(float));
+    memset(ogl.Sx, 0, 16 * sizeof(float));
+/*
+0  4  8  12
+1  5  9  13
+2  6  10 14
+3  7  11 15
+*/
+    ogl.Sx[0]  = -1.0f; 
+    ogl.Sx[5]  =  1.0f;
+    ogl.Sx[10] =  1.0f;
+    ogl.Sx[15] =  1.0f;  
+
+    ogl.Sy[0]  =  1.0f; 
+    ogl.Sy[5]  = -1.0f;
+    ogl.Sy[10] =  1.0f;
+    ogl.Sy[15] =  1.0f;  
+
+    ogl.Sz[0]  =  1.0f; 
+    ogl.Sz[5]  =  1.0f;
+    ogl.Sz[10] = -1.0f;
+    ogl.Sz[15] =  1.0f;  
+}
+
+void InitialiserOption3_Normales(void){
+    ogl.normales_basiques[0] = 1.0f ;
+    ogl.normales_basiques[1] = 1.0f ;
+    ogl.normales_basiques[2] = 1.0f ;
+
+    ogl.normales_inv[0] = -1.0f ;
+    ogl.normales_inv[1] = -1.0f ;
+    ogl.normales_inv[2] = -1.0f ;
+
+
+    ogl.normales_Current_Factor=ogl.normales_basiques;
 
 }
 
@@ -144,6 +181,8 @@ void ReinitialisationParamGraphiques(void) {
     InitialiserModeTrace();
     InitialiserOption1_Plan();
     InitialiserOption2_Projections();
+    InitialiserOption3_Projections();
+    InitialiserOption3_Normales();
     InitialiserSourceLumineuse();
     InitialiserMateriaux();
 }
@@ -226,6 +265,10 @@ void InitialiserParametresGraphiques(void) {
 
     /* option 2 : Projection*/
     InitialiserOption2_Projections();
+    InitialiserOption3_Projections();
+
+    InitialiserOption3_Normales();
+
 }
 
 void CreationFenetreGraphique(void) {

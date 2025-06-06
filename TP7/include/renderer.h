@@ -29,6 +29,7 @@ void TracerTrianglesOmbrageConstant(void);
 void TracerTrianglesPhong(void);
 
 //modes de tracé
+void TracerUnie(float R, float G, float B);
 void TracerFilaireSTPC(void);
 void TracerFilaireUnieATPC(void);
 void TracerSolideDegATPC(void);
@@ -48,9 +49,17 @@ void DessinerPlans(void);
 void TracerObjet(void);
 void TracerPlans(void);
 
+void TracerProjection(const float* projectionMatrix, const char* matrixName, 
+                      float red, float green, float blue);
 void TracerProjections(void);
-void TracerProjectionX(void);
-void TracerProjectionY(void);
-void TracerProjectionZ(void);
+void TracerMiroir(const float* matriceMiroir, const char* matrixName);
+void TracerMiroirs(void);
+
+
+void TracerProjOptions(void);
+
+void DessinerCadres(void);
+void TracerCadres(void);
+void TracerObjetBasique(void);
 
 #endif // RENDERER_H

@@ -21,6 +21,16 @@ typedef enum {
 } RenderMode;
 
 /**
+ * @brief Available option .
+ */
+typedef enum {
+    NONE,
+    PROJECTION,
+    MIROIRS,
+    OMBRE
+} ProjectionMode;
+
+/**
  * @brief Global state for all OpenGL settings and transforms.
  */
 typedef struct opengl {
@@ -73,12 +83,25 @@ typedef struct opengl {
     /* option 1 : Plan*/
     int mode_plan;
 
+    /* options : menu*/
+    ProjectionMode proj_mode;
 
     /* option 2 : Projection*/
-    int mode_projection;
     float Tchr[16];
     float Tchr_1[16];
     float Px[16], Py[16], Pz[16];
+
+
+    /* option 3 : Miroirs*/
+    float Sx[16], Sy[16], Sz[16];
+
+    /*facteurs de normales*/
+    float normales_basiques[3];
+    float normales_inv[3];
+
+    float * normales_Current_Factor;
+
+    
 
 
 } Opengl;
