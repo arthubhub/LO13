@@ -104,6 +104,9 @@ typedef struct opengl {
     /* option 4 : Ombre*/
     float Po[16];
     float PlanOmbre_Z;
+
+    /* option 5 : Axes*/
+    int repere;
     
 
 

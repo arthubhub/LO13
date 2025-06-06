@@ -891,9 +891,11 @@ void TracerObjetBasique(void){
 
 
 void TracerRepere(void){
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-        MatriceVuePlan();
-        DessinerRepere();
-    glPopMatrix();
+    if (ogl.repere){
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+            MatriceVuePlan();
+            DessinerRepere();
+        glPopMatrix();
+}
 }

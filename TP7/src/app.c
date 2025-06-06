@@ -167,6 +167,10 @@ void InitialiserOption3_Normales(void){
     ogl.normales_Current_Factor=ogl.normales_basiques;
 
 }
+void InitialiserOption5_Repere(void){
+    ogl.repere=0;
+
+}
 
 
 
@@ -188,6 +192,7 @@ void ReinitialisationParamGraphiques(void) {
     InitialiserSourceLumineuse();
     InitialiserOption4_Ombres();
     InitialiserMateriaux();
+    InitialiserOption5_Repere();
 }
 
 
@@ -270,8 +275,13 @@ void InitialiserParametresGraphiques(void) {
 
     /* option 2 : Projection*/
     InitialiserOption2_Projections();
+
+    /* option 3 : Miroirs*/
     InitialiserOption3_Projections();
     InitialiserOption3_Normales();
+
+    /* option 5 : Miroirs*/
+    InitialiserOption5_Repere();
 
 }
 

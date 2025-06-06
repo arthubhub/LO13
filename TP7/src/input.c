@@ -159,7 +159,11 @@ void Keyboard(unsigned char key, int x, int y){
             glutPostRedisplay();
             MatriceProjection();
             break;
-        
+        case 'r':
+            ogl.repere^=1;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
 
 
         default:
