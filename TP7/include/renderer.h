@@ -48,10 +48,10 @@ void DessinerPlans(void);
 void TracerObjet(void);
 void TracerPlans(void);
 
+void TracerProjection(const float* projectionMatrix, const char* matrixName, 
+                      float red, float green, float blue);
 void TracerProjections(void);
-void TracerProjectionX(void);
-void TracerProjectionY(void);
-void TracerProjectionZ(void);
+void TracerProjOptions(void);
 
 void DessinerCadres(void);
 void TracerCadres(void);

@@ -130,11 +130,6 @@ void Keyboard(unsigned char key, int x, int y){
             MatriceProjection();
             break;
         case 'P':
-            ogl.mode_plan=ogl.mode_plan^0x1;
-            glutPostRedisplay();
-            MatriceProjection();
-            break;
-        case 'm':
             if (ogl.proj_mode==PROJECTION){
                 ogl.proj_mode=NONE;
             }

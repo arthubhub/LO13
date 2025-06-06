@@ -76,59 +76,40 @@ void MatriceVuePlan(void)
         ogl.vertX, ogl.vertY, ogl.vertZ);
 }
 
-void MatriceVueProjectionX(void){
+void MatriceVueProjection(const float* projectionMatrix, const char* matrixName) {
     glLoadIdentity();
+    
     // Appliquer Tchr
     gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
-        ogl.focalX, ogl.focalY, ogl.focalZ,
-        ogl.vertX, ogl.vertY, ogl.vertZ);
-    // Multiplier par Py initialisée au début
-    glMultMatrixf(ogl.Px);
-    PrintMatrix4x4("ogl.Px", ogl.Px);
+              ogl.focalX, ogl.focalY, ogl.focalZ,
+              ogl.vertX, ogl.vertY, ogl.vertZ);
+    
+    // Multiplier par la matrice de projection (Px, Py, ou Pz)
+    glMultMatrixf(projectionMatrix);
+    PrintMatrix4x4(matrixName, projectionMatrix);
+    
     // Multiplier par Tchr-1
     glMultMatrixf(ogl.Tchr_1);
     PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
     PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
+    
     // Multiplier par Tg
     glMultMatrixf(ogl.geometricTransformations);
+    
     // Remultiplier par Tchr
     glMultMatrixf(ogl.Tchr);
 }
-void MatriceVueProjectionY(void){
-    glLoadIdentity();
-    // Appliquer Tchr
-    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
-        ogl.focalX, ogl.focalY, ogl.focalZ,
-        ogl.vertX, ogl.vertY, ogl.vertZ);
-    // Multiplier par Py initialisée au début
-    glMultMatrixf(ogl.Py);
-    PrintMatrix4x4("ogl.Py", ogl.Py);
-    // Multiplier par Tchr-1
-    glMultMatrixf(ogl.Tchr_1);
-    PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
-    PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
-    // Multiplier par Tg
-    glMultMatrixf(ogl.geometricTransformations);
-    // Remultiplier par Tchr
-    glMultMatrixf(ogl.Tchr);
+
+void MatriceVueProjectionX(void) {
+    MatriceVueProjection(ogl.Px, "ogl.Px");
 }
-void MatriceVueProjectionZ(void){
-    glLoadIdentity();
-    // Appliquer Tchr
-    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
-        ogl.focalX, ogl.focalY, ogl.focalZ,
-        ogl.vertX, ogl.vertY, ogl.vertZ);
-    // Multiplier par Pz initialisée au début
-    glMultMatrixf(ogl.Pz);
-    PrintMatrix4x4("ogl.Pz", ogl.Pz);
-    // Multiplier par Tchr-1
-    glMultMatrixf(ogl.Tchr_1);
-    PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
-    PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
-    // Multiplier par Tg
-    glMultMatrixf(ogl.geometricTransformations);
-    // Remultiplier par Tchr
-    glMultMatrixf(ogl.Tchr);
+
+void MatriceVueProjectionY(void) {
+    MatriceVueProjection(ogl.Py, "ogl.Py");
+}
+
+void MatriceVueProjectionZ(void) {
+    MatriceVueProjection(ogl.Pz, "ogl.Pz");
 }
 
 
@@ -160,12 +141,10 @@ void Display(void) {
     EffacerEcran();
     // Zbuffer On
     ZbufferActivation();
-    // Plans
-    TracerPlans();
     // Objet
     TracerObjet();
-    // Projections
-    TracerProjections();
+    // Modes de projections, miroirs, plans, ombre ...
+    TracerProjOptions();
     // Zbuffer Off
     ZbufferDesactivation();
     ViderMemoireEcran();

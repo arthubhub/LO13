@@ -445,43 +445,27 @@ void DessinerPlans(void){
 }
 
 void TracerPlans(void){
-    if (ogl.mode_plan){
-        glPushMatrix();
-        {
-            MatriceVuePlan();
-            DessinerPlans();
-        }
-        glPopMatrix();
+    glPushMatrix();
+    {
+        MatriceVuePlan();
+        DessinerPlans();
     }
+    glPopMatrix();
 }
 
-void TracerProjectionX(void){
+void TracerProjection(const float* projectionMatrix, const char* matrixName, 
+                      float red, float green, float blue) {
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    MatriceVueProjectionX();
-    glColor3f(1.0, 0.6, 0.6);
+    
+    MatriceVueProjection(projectionMatrix, matrixName);
+    glColor3f(red, green, blue);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     TracerTrianglesBasique();
+    
     glPopMatrix();
 }
-void TracerProjectionY(void){
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    MatriceVueProjectionY();
-    glColor3f(0.6, 1.0, 0.6);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    TracerTrianglesBasique();
-    glPopMatrix();
-}
-void TracerProjectionZ(void){
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    MatriceVueProjectionZ();
-    glColor3f(0.6, 0.6, 1.0);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    TracerTrianglesBasique();
-    glPopMatrix();
-}
+
 
 void DessinerCadres(void) {
     DecalageArriereActivation();
@@ -618,19 +602,32 @@ void TracerCadres(void){
 }
 
 
-void TracerProjections(void){
-    if (ogl.proj_mode==PROJECTION){
-        TracerProjectionX(); // on trace la projections sur X
-        TracerProjectionY(); // on trace la projections sur Y
-        TracerProjectionZ(); // on trace la projections sur Z
-    }
-    else if (ogl.proj_mode==MIROIRS){
-        TracerCadres();
-    }
-    else if (ogl.proj_mode==OMBRE){
+void TracerProjections(void) {
+    TracerProjection(ogl.Px, "ogl.Px", 1.0f, 0.6f, 0.6f);  // X projection - red tint
+    TracerProjection(ogl.Py, "ogl.Py", 0.6f, 1.0f, 0.6f);  // Y projection - green tint
+    TracerProjection(ogl.Pz, "ogl.Pz", 0.6f, 0.6f, 1.0f);  // Z projection - blue tint
+}
 
+void TracerProjOptions(){
+    switch (ogl.proj_mode){
+        case NONE:
+            break;
+        case PROJECTION:{
+            TracerPlans();
+            TracerProjections();
+            break;
+        }
+        case MIROIRS:{
+            TracerCadres();
+            // Logique miroirs
+            break;
+        }
+        case OMBRE:{
+            break;
+        }
     }
 }
+
 
 
 void TracerObjet(void){
