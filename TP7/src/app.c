@@ -138,20 +138,34 @@ void InitialiserOption3_Projections(void){
 2  6  10 14
 3  7  11 15
 */
-    ogl.Px[0]  = -1.0f; 
-    ogl.Px[5]  =  1.0f;
-    ogl.Px[10] =  1.0f;
-    ogl.Px[15] =  1.0f;  
+    ogl.Sx[0]  = -1.0f; 
+    ogl.Sx[5]  =  1.0f;
+    ogl.Sx[10] =  1.0f;
+    ogl.Sx[15] =  1.0f;  
 
-    ogl.Py[0]  =  1.0f; 
-    ogl.Py[5]  = -1.0f;
-    ogl.Py[10] =  1.0f;
-    ogl.Py[15] =  1.0f;  
+    ogl.Sy[0]  =  1.0f; 
+    ogl.Sy[5]  = -1.0f;
+    ogl.Sy[10] =  1.0f;
+    ogl.Sy[15] =  1.0f;  
 
-    ogl.Pz[0]  =  1.0f; 
-    ogl.Pz[5]  =  1.0f;
-    ogl.Pz[10] = -1.0f;
-    ogl.Pz[15] =  1.0f;  
+    ogl.Sz[0]  =  1.0f; 
+    ogl.Sz[5]  =  1.0f;
+    ogl.Sz[10] = -1.0f;
+    ogl.Sz[15] =  1.0f;  
+}
+
+void InitialiserOption3_Normales(void){
+    ogl.normales_basiques[0] = 1.0f ;
+    ogl.normales_basiques[1] = 1.0f ;
+    ogl.normales_basiques[2] = 1.0f ;
+
+    ogl.normales_inv[0] = -1.0f ;
+    ogl.normales_inv[1] = -1.0f ;
+    ogl.normales_inv[2] = -1.0f ;
+
+
+    ogl.normales_Current_Factor=ogl.normales_basiques;
+
 }
 
 
@@ -168,6 +182,7 @@ void ReinitialisationParamGraphiques(void) {
     InitialiserOption1_Plan();
     InitialiserOption2_Projections();
     InitialiserOption3_Projections();
+    InitialiserOption3_Normales();
     InitialiserSourceLumineuse();
     InitialiserMateriaux();
 }
@@ -250,6 +265,10 @@ void InitialiserParametresGraphiques(void) {
 
     /* option 2 : Projection*/
     InitialiserOption2_Projections();
+    InitialiserOption3_Projections();
+
+    InitialiserOption3_Normales();
+
 }
 
 void CreationFenetreGraphique(void) {

@@ -84,7 +84,7 @@ void MatriceVueProjection(const float* projectionMatrix, const char* matrixName)
               ogl.focalX, ogl.focalY, ogl.focalZ,
               ogl.vertX, ogl.vertY, ogl.vertZ);
     
-    // Multiplier par la matrice de projection (Px, Py, ou Pz)
+    // Multiplier par la matrice de projection (Px, Py, ou Pz, Sx, Sy ou Sz)
     glMultMatrixf(projectionMatrix);
     PrintMatrix4x4(matrixName, projectionMatrix);
     
@@ -142,7 +142,7 @@ void Display(void) {
     // Zbuffer On
     ZbufferActivation();
     // Objet
-    TracerObjet();
+    TracerObjetBasique();
     // Modes de projections, miroirs, plans, ombre ...
     TracerProjOptions();
     // Zbuffer Off

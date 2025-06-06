@@ -94,6 +94,13 @@ typedef struct opengl {
 
     /* option 3 : Miroirs*/
     float Sx[16], Sy[16], Sz[16];
+
+    /*facteurs de normales*/
+    float normales_basiques[3];
+    float normales_inv[3];
+
+    float * normales_Current_Factor;
+
     
 
 
