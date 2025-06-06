@@ -76,6 +76,40 @@ void MatriceVuePlan(void)
         ogl.vertX, ogl.vertY, ogl.vertZ);
 }
 
+void MatriceVueOmbre(const float* projectionMatrix, const char* matrixName){
+    glLoadIdentity();
+    
+    // Appliquer Tchr
+    gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
+              ogl.focalX, ogl.focalY, ogl.focalZ,
+              ogl.vertX, ogl.vertY, ogl.vertZ);
+
+    // Appliquer Tos
+
+    glTranslatef(ogl.src.position[0],ogl.src.position[1],ogl.src.position[2]);
+    
+    // Multiplier par la matrice de projection
+    glMultMatrixf(projectionMatrix);
+    PrintMatrix4x4(matrixName, projectionMatrix);
+
+    // Appliquer Tso
+    glTranslatef(-ogl.src.position[0],-ogl.src.position[1],-ogl.src.position[2]);
+
+    
+    // Multiplier par Tchr-1
+    glMultMatrixf(ogl.Tchr_1);
+    PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
+    PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
+    
+    // Multiplier par Tg
+    glMultMatrixf(ogl.geometricTransformations);
+    
+    // Remultiplier par Tchr
+    glMultMatrixf(ogl.Tchr);
+
+
+}
+
 void MatriceVueProjection(const float* projectionMatrix, const char* matrixName) {
     glLoadIdentity();
     

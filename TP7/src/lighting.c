@@ -1,4 +1,5 @@
 #include <GL/glut.h>
+#include <string.h>
 #include "lighting.h"
 #include "opengl_state.h"  // Defines 'extern Opengl ogl;'
 
@@ -13,13 +14,40 @@
     sont conformes à la théorie et sont respectivement 𝑆௔, 𝑆ௗ, 𝑆௦ avec la quatrième composante
     pour chaque champ à fixer à 1.0 (pour l’opacité).*/
 
-    for (int i=0;i<=3;i++){
+    for (int i=0;i<3;i++){
         ogl.src.ambient[i]=1;
         ogl.src.diffuse[i]=1;
-        ogl.src.position[i]=1;
+        ogl.src.position[i]=5;
         ogl.src.specular[i]=1;
     }
+
+
+    ogl.src.ambient[3]=1;
+    ogl.src.diffuse[3]=1;
+    ogl.src.specular[3]=1;
     ogl.src.position[3]=0.0f; // position à l'infini
+
+
+    ogl.src.position[0]=-5.0f;
+
+}
+
+void InitialiserOption4_Ombres(void){
+    ogl.PlanOmbre_Z=-0.01f;
+
+    memset(ogl.Po, 0, 16 * sizeof(float));
+/*
+0  4  8  12
+1  5  9  13
+2  6  10 14
+3  7  11 15
+*/
+    float d =  ogl.PlanOmbre_Z  - ogl.src.position[2];
+
+    ogl.Po[0]  = 1.0f; 
+    ogl.Po[5]  =  1.0f;
+    ogl.Po[10] =  1.0f;
+    ogl.Po[11] =  1/d;  
 
 }
 
@@ -113,3 +141,5 @@ void AffectationMateriau(void)
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, (ogl.current_mat)->specular) ;
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, (ogl.current_mat)->shininess) ;
 }
+
+
