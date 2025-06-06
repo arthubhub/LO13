@@ -67,3 +67,85 @@ void CalculerBarycentre(int k, float *Gx, float *Gy, float *Gz) {
 float CalculerShrink(float A, float G) {
     return (1.0f - ogl.shrink) * A + ogl.shrink * G;
 }
+
+/* --------------------------------------------------------------------
+ * 1) Soustraction a - b
+ * -------------------------------------------------------------------- */
+void SubtractVectors(const float a[3], const float b[3], float out[3]) {
+    out[0] = a[0] - b[0];
+    out[1] = a[1] - b[1];
+    out[2] = a[2] - b[2];
+}
+
+/* --------------------------------------------------------------------
+ * 2) Addition a + b
+ * -------------------------------------------------------------------- */
+void AddVectors(const float a[3], const float b[3], float out[3]) {
+    out[0] = a[0] + b[0];
+    out[1] = a[1] + b[1];
+    out[2] = a[2] + b[2];
+}
+
+/* --------------------------------------------------------------------
+ * 3) Mise à l'échelle v * s
+ * -------------------------------------------------------------------- */
+void ScaleVector(const float v[3], float s, float out[3]) {
+    out[0] = v[0] * s;
+    out[1] = v[1] * s;
+    out[2] = v[2] * s;
+}
+
+/* --------------------------------------------------------------------
+ * 4) Normalisation (en place). Renvoie la norme initiale
+ * -------------------------------------------------------------------- */
+double NormalizeVector(float v[3]) {
+    double n = sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+    if (n > 0.0) {
+        v[0] = (float)(v[0] / n);
+        v[1] = (float)(v[1] / n);
+        v[2] = (float)(v[2] / n);
+    }
+    return n;
+}
+
+/* --------------------------------------------------------------------
+ * 5) Projection de v sur axis (axis peut être non unitaire).
+ *    proj = ((v⋅axis) / ||axis||^2) * axis
+ * -------------------------------------------------------------------- */
+void ProjectOnto(const float v[3], const float axis[3], float out[3]) {
+    /* d = v ⋅ axis */
+    double d = v[0]*axis[0] + v[1]*axis[1] + v[2]*axis[2];
+    /* ||axis||^2 */
+    double axis_sq = axis[0]*axis[0] + axis[1]*axis[1] + axis[2]*axis[2];
+    if (axis_sq <= 0.0) {
+        /* Si axis est le vecteur nul, on renvoie (0,0,0) */
+        out[0] = out[1] = out[2] = 0.0f;
+    } else {
+        double scale = d / axis_sq;
+        out[0] = (float)(axis[0] * scale);
+        out[1] = (float)(axis[1] * scale);
+        out[2] = (float)(axis[2] * scale);
+    }
+}
+
+/* --------------------------------------------------------------------
+ * 6) Composante orthogonale de v par rapport à axis :
+ *    out = v - proj(v sur axis)
+ * -------------------------------------------------------------------- */
+void PerpComponent(const float v[3], const float axis[3], float out[3]) {
+    float proj[3];
+    ProjectOnto(v, axis, proj);
+    out[0] = v[0] - proj[0];
+    out[1] = v[1] - proj[1];
+    out[2] = v[2] - proj[2];
+}
+
+/* --------------------------------------------------------------------
+ * 7) Produit vectoriel brut (sans normalisation)
+ *    result = a × b
+ * -------------------------------------------------------------------- */
+void RawCrossProduct(const float a[3], const float b[3], float result[3]) {
+    result[0] = a[1]*b[2] - a[2]*b[1];
+    result[1] = a[2]*b[0] - a[0]*b[2];
+    result[2] = a[0]*b[1] - a[1]*b[0];
+}

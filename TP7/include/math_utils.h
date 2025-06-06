@@ -2,6 +2,7 @@
 #define MATH_UTILS_H
 
 #include <math.h>
+#include <stdbool.h>
 
 
 /**
@@ -48,5 +49,51 @@ void CalculerBarycentre(int k, float *Gx, float *Gy, float *Gz);
  */
 float CalculerShrink(float A, float G);
 
+
+/**
+ * Soustrait deux vecteurs a - b, résultat dans out.
+ *   out[i] = a[i] - b[i]  pour i=0,1,2
+ */
+void SubtractVectors(const float a[3], const float b[3], float out[3]);
+
+/**
+ * Additionne deux vecteurs a + b, résultat dans out.
+ */
+void AddVectors(const float a[3], const float b[3], float out[3]);
+
+/**
+ * Met le vecteur v à l'échelle s, résultat dans out.
+ *   out[i] = v[i] * s  pour i=0,1,2
+ */
+void ScaleVector(const float v[3], float s, float out[3]);
+
+/**
+ * Normalise (en place) le vecteur v. 
+ *   Si ||v|| > 0, alors v[i] := v[i] / ||v||  pour i=0,1,2
+ *   Renvoie la norme initiale de v (avant division).
+ */
+double NormalizeVector(float v[3]);
+
+/**
+ * Calcule la projection de v sur axis (axis doit être un vecteur unitaire
+ * ou non-unitaire, on projette quand même). 
+ *   proj = ( (v⋅axis) / ||axis||^2 ) * axis 
+ *   Résultat dans out.
+ */
+void ProjectOnto(const float v[3], const float axis[3], float out[3]);
+
+/**
+ * Calcule la composante de v orthogonale à axis, c’est-à-dire
+ *   out = v - ( (v⋅axis) / ||axis||^2 ) * axis.
+ *   Résultat dans out.
+ */
+void PerpComponent(const float v[3], const float axis[3], float out[3]);
+
+/**
+ * Produit vectoriel sans normalisation. 
+ *   result = a × b (brut). 
+ *   IMPORTANT : ne normalise pas le résultat !
+ */
+void RawCrossProduct(const float a[3], const float b[3], float result[3]);
 
 #endif // MATH_UTILS_H

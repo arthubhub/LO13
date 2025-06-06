@@ -46,6 +46,10 @@ void TracerOmbrageFilairePhong(void);
 void DessinerPlans(void);
 void DessinerSol(void);
 
+void DessinerFlecheVoyante(const float axis[3], float longueur, float tailleTete);
+
+void DessinerRepere(void);
+
 /* Main drawing dispatch based on ogl.renderMode */
 void TracerObjet(void);
 void TracerPlans(void);
@@ -64,5 +68,7 @@ void TracerProjOptions(void);
 void DessinerCadres(void);
 void TracerCadres(void);
 void TracerObjetBasique(void);
+
+void TracerRepere(void);
 
 #endif // RENDERER_H

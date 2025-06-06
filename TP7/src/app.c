@@ -102,7 +102,7 @@ void InitialiserOption1_Plan(void){
     ogl.mode_plan = 0;
 }
 void InitialiserOption2_Projections(void){
-    float seuil = -0.03f;
+    float seuil = -0.05f;
     memset(ogl.Px, 0, 16 * sizeof(float));
     memset(ogl.Py, 0, 16 * sizeof(float));
     memset(ogl.Pz, 0, 16 * sizeof(float));

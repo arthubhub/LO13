@@ -175,6 +175,8 @@ void Display(void) {
     EffacerEcran();
     // Zbuffer On
     ZbufferActivation();
+    // repere
+    TracerRepere();
     // Objet
     TracerObjetBasique();
     // Modes de projections, miroirs, plans, ombre ...

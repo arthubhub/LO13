@@ -663,6 +663,113 @@ void DessinerSol(void){
 }
 
 
+void DessinerFlecheVoyante(const float axis[3], float longueur, float tailleTete) {
+    /* ---- 1) Point de la pointe P = longueur * axis ---- */
+    float P[3];
+    ScaleVector(axis, longueur, P);
+
+    /* ---- 2) V = P - O (O = position de la caméra dans ogl) ---- */
+    float O[3] = { ogl.obsX, ogl.obsY, ogl.obsZ };
+    float V[3];
+    SubtractVectors(P, O, V);
+
+    /* ---- 3) V_perp = V - ( (V⋅axis) / ||axis||^2 ) * axis ---- */
+    float Vperp[3];
+    PerpComponent(V, axis, Vperp);
+
+    /* Si Vperp est quasi-nul, on choisit un vecteur quelconque perpendiculaire à axis */
+    const double EPS = 1e-6;
+    if (fabsf(Vperp[0]) < EPS && fabsf(Vperp[1]) < EPS && fabsf(Vperp[2]) < EPS) {
+        /* Par exemple, si axis ∥ X, on prend Y ; si axis ∥ Y, on prend X ; sinon X. */
+        if (axis[0] == 1.0f && axis[1] == 0.0f && axis[2] == 0.0f) {
+            Vperp[0] = 0.0f; Vperp[1] = 1.0f; Vperp[2] = 0.0f;
+        } else if (axis[0] == 0.0f && axis[1] == 1.0f && axis[2] == 0.0f) {
+            Vperp[0] = 1.0f; Vperp[1] = 0.0f; Vperp[2] = 0.0f;
+        } else {
+            Vperp[0] = 1.0f; Vperp[1] = 0.0f; Vperp[2] = 0.0f;
+        }
+    }
+
+    /* ---- 4) U = (axis × Vperp) / ||axis × Vperp|| ---- */
+    float tmpCross[3];
+    RawCrossProduct(axis, Vperp, tmpCross);
+    double normCross = NormalizeVector(tmpCross);
+    float U[3];
+    if (normCross < EPS) {
+        /* Cas dégénéré : Vperp ∥ axis (rare si on gère bien au-dessus) */
+        /* On force U perpendiculairement à axis */
+        if (axis[0] == 1.0f && axis[1] == 0.0f && axis[2] == 0.0f) {
+            U[0] = 0.0f; U[1] = 1.0f; U[2] = 0.0f;
+        } else if (axis[0] == 0.0f && axis[1] == 1.0f && axis[2] == 0.0f) {
+            U[0] = 1.0f; U[1] = 0.0f; U[2] = 0.0f;
+        } else {
+            U[0] = 1.0f; U[1] = 0.0f; U[2] = 0.0f;
+        }
+    } else {
+        /* tmpCross est déjà normalisé par NormalizeVector, on le recopie dans U */
+        U[0] = tmpCross[0];
+        U[1] = tmpCross[1];
+        U[2] = tmpCross[2];
+    }
+
+    /* ---- 5) Centre de la base : B = P - s * axis ---- */
+    float B[3];
+    ScaleVector(axis, tailleTete, B);      /* B = axis * tailleTete */
+    SubtractVectors(P, B, B);              /* B = P - (axis * tailleTete) */
+
+    /* ---- 6) Sommets de la base : B1 = B + r*U,  B2 = B - r*U ---- */
+    float r = tailleTete * 0.5f;
+    float B1[3], B2[3], temp[3];
+    ScaleVector(U,  r, temp);   /* temp = r * U */
+    AddVectors(B, temp, B1);    /* B1 = B + r*U */
+    ScaleVector(U, -r, temp);   /* temp = -r * U */
+    AddVectors(B, temp, B2);    /* B2 = B - r*U */
+
+    /* ========== Tracé OpenGL =========== */
+    /* 1) Tige (shaft) */
+    glBegin(GL_LINES);
+      glVertex3f(0.0f, 0.0f, 0.0f);
+      glVertex3f(P[0],  P[1],  P[2]);
+    glEnd();
+
+    /* 2) Pointe (triangle) */
+    glBegin(GL_TRIANGLES);
+      glVertex3f(P[0],   P[1],   P[2]);
+      glVertex3f(B1[0],  B1[1],  B1[2]);
+      glVertex3f(B2[0],  B2[1],  B2[2]);
+    glEnd();
+}
+
+void DessinerRepere(void) {
+    float longueurAxe = 1.5f;
+    float tailleFleche = 0.05f;
+
+    //glDisable(GL_LIGHTING);
+    glLineWidth(2.0f);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    /* Axe X */
+    glColor3f(1.0f, 0.0f, 0.0f);
+    {
+        float axisX[3] = {1.0f, 0.0f, 0.0f};
+        DessinerFlecheVoyante(axisX, longueurAxe, tailleFleche);
+    }
+    /* Axe Y */
+    glColor3f(0.0f, 1.0f, 0.0f);
+    {
+        float axisY[3] = {0.0f, 1.0f, 0.0f};
+        DessinerFlecheVoyante(axisY, longueurAxe, tailleFleche);
+    }
+    /* Axe Z */
+    glColor3f(0.0f, 0.0f, 1.0f);
+    {
+        float axisZ[3] = {0.0f, 0.0f, 1.0f};
+        DessinerFlecheVoyante(axisZ, longueurAxe, tailleFleche);
+    }
+
+    glLineWidth(1.0f);
+    //glEnable(GL_LIGHTING);
+}
+
 void TracerCadres(void){
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -780,4 +887,13 @@ void TracerObjetBasique(void){
     ogl.normales_Current_Factor=ogl.normales_basiques;
     TracerObjet();
 
+}
+
+
+void TracerRepere(void){
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+        MatriceVuePlan();
+        DessinerRepere();
+    glPopMatrix();
 }
