@@ -44,6 +44,7 @@ void TracerOmbragePhongFilaire(void);
 void TracerOmbrageFilairePhong(void);
 
 void DessinerPlans(void);
+void DessinerSol(void);
 
 /* Main drawing dispatch based on ogl.renderMode */
 void TracerObjet(void);
@@ -55,6 +56,8 @@ void TracerProjections(void);
 void TracerMiroir(const float* matriceMiroir, const char* matrixName);
 void TracerMiroirs(void);
 
+void TracerSol(void);
+void TracerOmbre(void);
 
 void TracerProjOptions(void);
 

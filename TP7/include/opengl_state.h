@@ -101,6 +101,9 @@ typedef struct opengl {
 
     float * normales_Current_Factor;
 
+    /* option 4 : Ombre*/
+    float Po[16];
+    float PlanOmbre_Z;
     
 
 

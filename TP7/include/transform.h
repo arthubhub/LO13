@@ -22,6 +22,8 @@ void MatriceVueObjet(void);
  */
 void MatriceVuePlan(void);
 
+void MatriceVueOmbre(const float* projectionMatrix, const char* matrixName);
+
 void MatriceVueProjection(const float* projectionMatrix, const char* matrixName);
 
 void MatriceVueProjectionX(void);

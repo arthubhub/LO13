@@ -635,6 +635,33 @@ void DessinerCadres(void) {
 
 }
 
+void DessinerSol(void){
+    float side, t;
+    int i;
+    int pas = 15; // >0, nb de carreaux de coté
+    side = 5; // pour side = n, on va de -n+0.5 à n+0.5
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glColor3f(0.6f, 0.6f, 0.6f);
+    glBegin(GL_LINES);
+    {
+        for (i = 0 ; i<=pas ; i++){
+            t = -((float)side/2) + + (float)i/pas * side + 0.5f;
+            //printf("%f -> %f (%f)\n",-(side/2)+0.5f,(side/2)+0.5f,t);
+
+            glVertex3f(t, -(side/2)+0.5f, ogl.PlanOmbre_Z);
+            glVertex3f(t, (side/2)+0.5f, ogl.PlanOmbre_Z);
+
+            glVertex3f(-(side/2)+0.5f, t, ogl.PlanOmbre_Z);
+            glVertex3f((side/2)+0.5f, t, ogl.PlanOmbre_Z);
+            
+        }
+    }
+    glEnd();
+
+
+
+}
+
 
 void TracerCadres(void){
     glMatrixMode(GL_MODELVIEW);
@@ -659,6 +686,25 @@ void TracerMiroirs(){
     TracerMiroir(ogl.Sz, "ogl.Sz");
 }
 
+void TracerSol(){
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+        MatriceVuePlan();
+        DessinerSol();
+    glPopMatrix();
+
+}
+
+void TracerOmbre(){
+    glPushMatrix();
+        MatriceVueOmbre(ogl.Po, "ogl.Po");
+        TracerUnie(0.2f, 0.2f, 0.2f);
+    glPopMatrix();
+
+
+
+}
+
 void TracerProjOptions(){
     switch (ogl.proj_mode){
         case NONE:
@@ -674,6 +720,8 @@ void TracerProjOptions(){
             break;
         }
         case OMBRE:{
+            TracerSol();
+            TracerOmbre();
             break;
         }
     }

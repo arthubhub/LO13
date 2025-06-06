@@ -169,6 +169,8 @@ void InitialiserOption3_Normales(void){
 }
 
 
+
+
 void ReinitialisationParamGraphiques(void) {
    //InitialiserWindow();
     InitialiserRepereVue();
@@ -184,6 +186,7 @@ void ReinitialisationParamGraphiques(void) {
     InitialiserOption3_Projections();
     InitialiserOption3_Normales();
     InitialiserSourceLumineuse();
+    InitialiserOption4_Ombres();
     InitialiserMateriaux();
 }
 
@@ -255,6 +258,8 @@ void InitialiserParametresGraphiques(void) {
     /* source lumineuse */
     InitialiserSourceLumineuse();
 
+    InitialiserOption4_Ombres();
+
     /* materiaux */
     InitialiserMateriaux();
 
@@ -266,7 +271,6 @@ void InitialiserParametresGraphiques(void) {
     /* option 2 : Projection*/
     InitialiserOption2_Projections();
     InitialiserOption3_Projections();
-
     InitialiserOption3_Normales();
 
 }
