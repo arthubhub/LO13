@@ -3,7 +3,7 @@
 #include <string.h>
 #include "mesh.h"
 #include "math_utils.h"
-
+#include <math.h>
 
 
 
@@ -27,6 +27,9 @@ void InitializeMesh(Mesh *msh)  /* Initialisation de la struture mesh */
     msh->delta = 0.0;
     msh->memory = 0;
     msh->error = 0;
+    msh->curvature_v = NULL;
+    msh->curvature_min = 0;
+    msh->curvature_max = 0;
 }
 
 void ReadMesh(Mesh *msh, char **argv) /* lecture du fichier au format mesh INRIA Gamma3*/
@@ -290,6 +293,48 @@ void SetNormals(Mesh *msh)
 }
 
 
+
+
+void SetCurvature(Mesh *msh) {
+    int i, j, vi;
+    int nV = msh->number_of_vertices;
+    int nT = msh->number_of_triangles;
+    msh->curvature_v = (float*)malloc(nV * sizeof(float));
+    if (!msh->curvature_v) {
+        printf("error: not enough memory for %d curvature values\n", nV);
+        msh->error = 200;
+        return;
+    }
+    msh->memory += nV * sizeof(float);
+
+    for (i = 0; i < nV; ++i)
+        msh->curvature_v[i] = 0.0f;
+
+    for (i = 0; i < nT; ++i) {
+        int base = 3*i;
+        for (j = 0; j < 3; ++j) {
+            vi = msh->triangles[base + j];
+            msh->curvature_v[vi] += msh->alpha_t[base + j]; // -> ii+j dans le code du prof
+            
+        }
+    }
+    for (i = 0; i < nV; ++i) {
+        msh->curvature_v[i] = (float)(2.0 * M_PI - msh->curvature_v[i]);
+        if (msh->curvature_v[i] < msh->curvature_min){ 
+            msh->curvature_min = msh->curvature_v[i];
+        }
+        else if (msh->curvature_v[i] > msh->curvature_max) msh->curvature_max = msh->curvature_v[i];
+
+        printf("Curvature[%d] = %f\n",i,msh->curvature_v[i]);
+    }
+    printf("Min curvature : %f\nMax curvature : %f\n",msh->curvature_min,msh->curvature_max);
+    msh->curvature_min /= 10;
+    msh->curvature_max /= 10;
+
+}
+
+
+
 void defineCube(void){
     int i;
     
@@ -406,6 +451,7 @@ void ModeleDiscret(Mesh *msh, char **argv) {
     ReadMesh(msh,argv);
     NormalizeMesh(msh);
     SetNormals(msh);
+    SetCurvature(msh);
     // Pour utiliser le Cube, faire : 
     // defineCube();
 }
