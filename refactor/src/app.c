@@ -95,6 +95,8 @@ void InitialiserParametresGraphiques(void) {
     /* source lumineuse */
     InitialiserSourceLumineuse();
 
+    InitialiserOption4_Ombres();
+
     /* materiaux */
     InitialiserMateriaux();
 
