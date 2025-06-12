@@ -93,6 +93,12 @@ void Keyboard(unsigned char key, int x, int y){
             glutPostRedisplay();
             MatriceProjection();
             break;
+
+        case 'g':
+            ogl.renderMode = GAUSS_CURVATURE;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
         
 
         case 'a':

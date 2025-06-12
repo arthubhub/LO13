@@ -18,6 +18,9 @@ typedef struct mesh {
     int     *triangles;     
     float   *alpha_t;     
     float   *normal_t;     
+    float   *curvature_v;
+    float   curvature_min;
+    float   curvature_max;
     float    ccenter[3];    
     float    cmin[3], cmax[3];    
     float    delta;     
@@ -38,5 +41,7 @@ void defineCube(void);
 
 /* Choisir le modèle discret */
 void ModeleDiscret(Mesh *msh, char **argv);
+
+void SetCurvature(Mesh *msh);
 
 #endif // MESH_H

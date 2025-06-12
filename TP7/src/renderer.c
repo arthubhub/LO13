@@ -1,6 +1,7 @@
 
 #include <GL/glut.h>
 #include <stdio.h>
+#include <math.h>
 #include "renderer.h"
 #include "opengl_state.h"
 #include "mesh.h"
@@ -55,6 +56,37 @@ glEnable (GL_POLYGON_OFFSET_FILL);
 void DecalageArriereDesactivation(void)
 {
 glDisable (GL_POLYGON_OFFSET_FILL);
+}
+
+/**
+ * @brief Définit la couleur OpenGL en fonction de la courbure `cur`.
+ */
+
+static void SetColorFromCurvature(float cur, float posDenom, float negDenom)
+{
+    float ratio, lratio, r, g, b;
+
+    if (cur > 0.0f) {
+        ratio = cur / posDenom;
+        ratio = fminf(fmaxf(ratio, 0.0f), 1.0f);
+        //lratio = log1pf(ratio) / log1pf(2.0f); // log1p(1)=log(2)
+        lratio = ratio;
+        r = lratio;         
+        g = 0.0f;          
+        b = 1.0f - lratio;  
+    }
+    else {
+        ratio = (-cur) / negDenom;
+        ratio = fminf(fmaxf(ratio, 0.0f), 1.0f);
+        //lratio = log1pf(ratio) / log1pf(2.0f);
+        lratio = ratio;
+
+        r = 0.0f;          
+        g = lratio ;
+        b = 1.0f - (lratio);
+    }
+
+    glColor3f(r, g, b);
 }
 
 /**
@@ -144,6 +176,81 @@ void TracerTriangleUniquePhong(int k) {
     }
 }
 
+void TracerTriangleSubdiviseUnique(int k, float posDenom, float negDenom) {
+    int v0 = msh.triangles[k + 0];
+    int v1 = msh.triangles[k + 1];
+    int v2 = msh.triangles[k + 2];
+    
+    //  shrink -> comme dans tracer triangle unique
+    int shrink_state = (ogl.shrink > 0.01f) ? 1 : 0;
+    float Gx = 0.0f, Gy = 0.0f, Gz = 0.0f;
+    if (shrink_state) {
+        CalculerBarycentre(k, &Gx, &Gy, &Gz);
+    }
+    
+    // récupération des points selon shrink/pas shrink
+    float p0[3], p1[3], p2[3];
+    if (shrink_state) {
+        p0[0] = CalculerShrink(msh.vertices[3*v0], Gx);
+        p0[1] = CalculerShrink(msh.vertices[3*v0 + 1], Gy);
+        p0[2] = CalculerShrink(msh.vertices[3*v0 + 2], Gz);
+        
+        p1[0] = CalculerShrink(msh.vertices[3*v1], Gx);
+        p1[1] = CalculerShrink(msh.vertices[3*v1 + 1], Gy);
+        p1[2] = CalculerShrink(msh.vertices[3*v1 + 2], Gz);
+        
+        p2[0] = CalculerShrink(msh.vertices[3*v2], Gx);
+        p2[1] = CalculerShrink(msh.vertices[3*v2 + 1], Gy);
+        p2[2] = CalculerShrink(msh.vertices[3*v2 + 2], Gz);
+    } else {
+        p0[0] = msh.vertices[3*v0];
+        p0[1] = msh.vertices[3*v0 + 1];
+        p0[2] = msh.vertices[3*v0 + 2];
+        
+        p1[0] = msh.vertices[3*v1];
+        p1[1] = msh.vertices[3*v1 + 1];
+        p1[2] = msh.vertices[3*v1 + 2];
+        
+        p2[0] = msh.vertices[3*v2];
+        p2[1] = msh.vertices[3*v2 + 1];
+        p2[2] = msh.vertices[3*v2 + 2];
+    }
+    
+    // récupération des curvatues aux sommets
+    float cur0 = msh.curvature_v[v0];
+    float cur1 = msh.curvature_v[v1];
+    float cur2 = msh.curvature_v[v2];
+    
+    // milieux pour créer les 4 sous-triangles
+    float m01[3] = {0.5f * (p0[0] + p1[0]), 0.5f * (p0[1] + p1[1]), 0.5f * (p0[2] + p1[2])};
+    float m12[3] = {0.5f * (p1[0] + p2[0]), 0.5f * (p1[1] + p2[1]), 0.5f * (p1[2] + p2[2])};
+    float m02[3] = {0.5f * (p0[0] + p2[0]), 0.5f * (p0[1] + p2[1]), 0.5f * (p0[2] + p2[2])};
+    
+    // Sous triangle sommet 0
+    SetColorFromCurvature(cur0, posDenom, negDenom);
+    glVertex3f(p0[0], p0[1], p0[2]);
+    glVertex3f(m01[0], m01[1], m01[2]);
+    glVertex3f(m02[0], m02[1], m02[2]);
+    
+    // Sous triangle sommet 1
+    SetColorFromCurvature(cur1, posDenom, negDenom);
+    glVertex3f(p1[0], p1[1], p1[2]);
+    glVertex3f(m12[0], m12[1], m12[2]);
+    glVertex3f(m01[0], m01[1], m01[2]);
+    
+    // Sous triangle sommet 2
+    SetColorFromCurvature(cur2, posDenom, negDenom);
+    glVertex3f(p2[0], p2[1], p2[2]);
+    glVertex3f(m02[0], m02[1], m02[2]);
+    glVertex3f(m12[0], m12[1], m12[2]);
+    
+    // Sous triangle milieu
+    float curMoyenne = (cur0 + cur1 + cur2) / 3.0f;
+    SetColorFromCurvature(curMoyenne, posDenom, negDenom);
+    glVertex3f(m01[0], m01[1], m01[2]);
+    glVertex3f(m12[0], m12[1], m12[2]);
+    glVertex3f(m02[0], m02[1], m02[2]);
+}
 
 /**
  * @brief       Rend l'objet courant selon le mode de tracé défini.
@@ -195,6 +302,119 @@ void TracerTrianglesDegLineaire(void) {
     }
     glEnd();
 }
+void TracerPointsDegGauss(void) {
+    // 1) Dénominateurs pour la normalisation
+    float posDenom = (msh.curvature_max > 0.0f)
+                     ? msh.curvature_max : 1.0f;
+    float negDenom = (msh.curvature_min < 0.0f)
+                     ? -msh.curvature_min : 1.0f;
+
+    // 2) Taille et style des points
+    glPointSize(2.0f);
+    glEnable(GL_POINT_SMOOTH);  // optionnel pour adoucir
+
+    // 3) Parcours de tous les sommets
+    glBegin(GL_POINTS);
+    for (int i = 0; i < msh.number_of_vertices; ++i) {
+        float cur   = msh.curvature_v[i];
+        float ratio, r, g, b;
+
+        if (cur > 0.0f) {
+            // elliptique : rouge ← bleu  (r augmente, b diminue)
+            ratio = cur / posDenom;
+            ratio = fminf(fmaxf(ratio, 0.0f), 1.0f);
+            r = ratio;
+            g = 0.0f;
+            b = 1.0f - ratio;
+        }
+        else {
+            // hyperbolique : vert ← bleu (g diminue, b augmente)
+            ratio = (-cur) / negDenom;
+            ratio = fminf(fmaxf(ratio, 0.0f), 1.0f);
+            r = 0.0f;
+            g = 1.0f - ratio;
+            b = ratio;
+        }
+
+        glColor3f(r, g, b);
+        // 4) Position du point = coordonnées du sommet i
+        glVertex3f(
+            msh.vertices[3*i + 0],
+            msh.vertices[3*i + 1],
+            msh.vertices[3*i + 2]
+        );
+    }
+    glEnd();
+}
+
+void TracerTrianglesDegGauss(void) {
+    float posDenom = (msh.curvature_max > 0.0f)
+                     ? msh.curvature_max : 1.0f;
+    float negDenom = (msh.curvature_min < 0.0f)
+                     ? -msh.curvature_min : 1.0f;
+
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < msh.number_of_triangles; i++) {
+        int k = 3*i;
+        int v0 = msh.triangles[k],
+            v1 = msh.triangles[k+1],
+            v2 = msh.triangles[k+2];
+
+        float cur = (msh.curvature_v[v0]
+                   + msh.curvature_v[v1]
+                   + msh.curvature_v[v2]) * (1.0f/3.0f);
+        float ratio;
+        float r, g, b;
+        if (cur > 0.0f) {
+            ratio = cur / posDenom;
+            // clamp entre 0 et 1
+            if (ratio < 0.0f) ratio = 0.0f;
+            else if (ratio > 1.0f) ratio = 1.0f;
+
+            r = ratio;
+            g = 0.0f;
+            b = 1.0f - ratio;
+        }
+        else {
+            ratio = (-cur) / negDenom;
+            if (ratio < 0.0f) ratio = 0.0f;
+            else if (ratio > 1.0f) ratio = 1.0f;
+
+            r = 0.0f;
+            g =  ratio;
+            b = 1.0f - ratio;
+        }
+        //printf("ratio : %f\n",ratio);
+        glColor3f(r, g, b);
+        TracerTriangleUnique(k);
+    }
+    glEnd();
+}
+
+
+
+
+/**
+ * @brief Subdivision en 4 de chaque triangle, couleur uniforme par sous-triangle.
+ */
+void TracerTrianglesSubdivises(void)
+{
+    int i, k;
+    
+    // Normalisation des courbures
+    float posDenom = (msh.curvature_max > 0.0f)
+        ? msh.curvature_max : 1.0f;
+    float negDenom = (msh.curvature_min < 0.0f)
+        ? -msh.curvature_min : 1.0f;
+    
+    glBegin(GL_TRIANGLES);
+    for (i = 0; i < msh.number_of_triangles; i++) {
+        k = 3 * i;
+        TracerTriangleSubdiviseUnique(k, posDenom, negDenom);
+    }
+    glEnd();
+}
+
 
 /**
  * @brief       Trace les triangles avec la normale pour un obrage linéaire
@@ -407,6 +627,21 @@ void TracerOmbrageFilairePhong(void){
             TracerTrianglesPhong(); 
         DesactivationSource() ;
     
+}
+
+void TracerGaussCurvature(void){
+
+        DecalageArriereActivation();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            TracerTrianglesSubdivises();  // Tracé en mode remplissage
+        DecalageArriereDesactivation();
+
+    
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glColor3f(0.2f, 0.2f, 0.9f);
+        TracerTrianglesBasique();
+
+
 }
 
 
@@ -632,7 +867,6 @@ void DessinerCadres(void) {
     glEnd();
     glLineWidth(1.0f);
 
-
 }
 
 void DessinerSol(void){
@@ -664,16 +898,16 @@ void DessinerSol(void){
 
 
 void DessinerFlecheVoyante(const float axis[3], float longueur, float tailleTete) {
-    /* ---- 1) Point de la pointe P = longueur * axis ---- */
+    /*- 1) Point de la pointe P = longueur * axis- */
     float P[3];
     ScaleVector(axis, longueur, P);
 
-    /* ---- 2) V = P - O (O = position de la caméra dans ogl) ---- */
+    /*- 2) V = P - O (O = position de la caméra dans ogl)- */
     float O[3] = { ogl.obsX, ogl.obsY, ogl.obsZ };
     float V[3];
     SubtractVectors(P, O, V);
 
-    /* ---- 3) V_perp = V - ( (V⋅axis) / ||axis||^2 ) * axis ---- */
+    /*- 3) V_perp = V - ( (V⋅axis) / ||axis||^2 ) * axis- */
     float Vperp[3];
     PerpComponent(V, axis, Vperp);
 
@@ -690,7 +924,7 @@ void DessinerFlecheVoyante(const float axis[3], float longueur, float tailleTete
         }
     }
 
-    /* ---- 4) U = (axis × Vperp) / ||axis × Vperp|| ---- */
+    /*- 4) U = (axis × Vperp) / ||axis × Vperp||- */
     float tmpCross[3];
     RawCrossProduct(axis, Vperp, tmpCross);
     double normCross = NormalizeVector(tmpCross);
@@ -712,12 +946,12 @@ void DessinerFlecheVoyante(const float axis[3], float longueur, float tailleTete
         U[2] = tmpCross[2];
     }
 
-    /* ---- 5) Centre de la base : B = P - s * axis ---- */
+    /*- 5) Centre de la base : B = P - s * axis- */
     float B[3];
     ScaleVector(axis, tailleTete, B);      /* B = axis * tailleTete */
     SubtractVectors(P, B, B);              /* B = P - (axis * tailleTete) */
 
-    /* ---- 6) Sommets de la base : B1 = B + r*U,  B2 = B - r*U ---- */
+    /*- 6) Sommets de la base : B1 = B + r*U,  B2 = B - r*U- */
     float r = tailleTete * 0.5f;
     float B1[3], B2[3], temp[3];
     ScaleVector(U,  r, temp);   /* temp = r * U */
@@ -808,8 +1042,6 @@ void TracerOmbre(){
         TracerUnie(0.2f, 0.2f, 0.2f);
     glPopMatrix();
 
-
-
 }
 
 void TracerProjOptions(){
@@ -877,6 +1109,10 @@ void TracerObjet(void){
             break;
         case OMBRAGE_FILAIRE_PHONG:{
             TracerOmbrageFilairePhong();
+            }
+            break;
+        case GAUSS_CURVATURE:{
+            TracerGaussCurvature();
             }
             break;
     }
