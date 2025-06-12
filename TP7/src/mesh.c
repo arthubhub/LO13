@@ -28,6 +28,7 @@ void InitializeMesh(Mesh *msh)  /* Initialisation de la struture mesh */
     msh->memory = 0;
     msh->error = 0;
     msh->curvature_v = NULL;
+    msh->carreaux = NULL;
     msh->curvature_min = 0;
     msh->curvature_max = 0;
 }
@@ -84,6 +85,7 @@ void ReadMesh(Mesh *msh, char **argv) /* lecture du fichier au format mesh INRIA
         {
             fscanf(file, "%d", &(msh->number_of_triangles));
             msh->triangles = (int*)malloc((3*msh->number_of_triangles)*sizeof(int));
+            msh->carreaux  = (int*)malloc((3*msh->number_of_triangles)*sizeof(int));
             if (!msh->triangles)
             {
                 printf("error: not enough memory for %d triangles (%ld bytes)\n", msh->number_of_triangles, 3*msh->number_of_triangles*sizeof(int));
@@ -95,7 +97,7 @@ void ReadMesh(Mesh *msh, char **argv) /* lecture du fichier au format mesh INRIA
             for (i=0; i<msh->number_of_triangles; i++)
             {
                 ii = 3 * i;
-                fscanf(file, "%d %d %d %d", &(msh->triangles[ii]), &(msh->triangles[ii+1]), &(msh->triangles[ii+2]), &j);
+                fscanf(file, "%d %d %d %d", &(msh->triangles[ii]), &(msh->triangles[ii+1]), &(msh->triangles[ii+2]), &(msh->carreaux[i]));
                 for (j=0; j<3; j++)
                     msh->triangles[ii+j]--;
             }

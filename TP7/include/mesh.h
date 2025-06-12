@@ -19,6 +19,7 @@ typedef struct mesh {
     float   *alpha_t;     
     float   *normal_t;     
     float   *curvature_v;
+    int     *carreaux;
     float   curvature_min;
     float   curvature_max;
     float    ccenter[3];    
