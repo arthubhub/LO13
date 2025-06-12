@@ -320,6 +320,8 @@ void SetCurvature(Mesh *msh) {
     }
     for (i = 0; i < nV; ++i) {
         msh->curvature_v[i] = (float)(2.0 * M_PI - msh->curvature_v[i]);
+        if (msh->curvature_v[i]<-0.5f) msh->curvature_v[i]=-0.5f;
+        if (msh->curvature_v[i]>0.5f) msh->curvature_v[i]=0.5f;
         if (msh->curvature_v[i] < msh->curvature_min){ 
             msh->curvature_min = msh->curvature_v[i];
         }
@@ -328,8 +330,8 @@ void SetCurvature(Mesh *msh) {
         printf("Curvature[%d] = %f\n",i,msh->curvature_v[i]);
     }
     printf("Min curvature : %f\nMax curvature : %f\n",msh->curvature_min,msh->curvature_max);
-    msh->curvature_min /= 10;
-    msh->curvature_max /= 10;
+    //msh->curvature_min /= 10;
+    //msh->curvature_max /= 10;
 
 }
 
