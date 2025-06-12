@@ -27,12 +27,14 @@ void TracerTrianglesBasique(void);
 void TracerTrianglesDegLineaire(void);
 void TracerTrianglesOmbrageConstant(void);
 void TracerTrianglesPhong(void);
+void TracerTrianglesCarreauxClassique(void);
 
 void TracerTrianglesDegGauss(void);
 void TracerPointsDegGauss(void);
 void TracerGaussCurvature(void);
+void TracerCarrauxClassique(void);
 void TracerTrianglesSubdivises(void);
-static void SetColorFromCurvature(float cur, float posDenom, float negDenom);
+void SetColorFromCurvature(float cur, float posDenom, float negDenom);
 
 //modes de tracé
 void TracerUnie(float R, float G, float B);

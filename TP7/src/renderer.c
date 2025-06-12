@@ -62,7 +62,7 @@ glDisable (GL_POLYGON_OFFSET_FILL);
  * @brief Définit la couleur OpenGL en fonction de la courbure `cur`.
  */
 
-static void SetColorFromCurvature(float cur, float posDenom, float negDenom)
+void SetColorFromCurvature(float cur, float posDenom, float negDenom)
 {
     float ratio, lratio, r, g, b;
 
@@ -416,6 +416,27 @@ void TracerTrianglesSubdivises(void)
 }
 
 
+void TracerTrianglesCarreauxClassique(void) {
+    int i, k;
+    float r,g,b;
+    // Boucle sur tous les triangles
+    glBegin(GL_TRIANGLES);
+    for (i = 0; i < msh.number_of_triangles; i++) {
+        int carreau_id     = msh.carreaux[i];
+        int couleur_index  = carreau_id % msh.nb_couleurs_carreaux;
+        int base = couleur_index * 3;
+        
+        r = msh.couleurs_carreaux[base + 0];
+        g = msh.couleurs_carreaux[base + 1];
+        b = msh.couleurs_carreaux[base + 2];
+
+        glColor3f(r, g, b); 
+        k = 3 * i;
+        TracerTriangleUnique(k);
+    }
+    glEnd();
+}
+
 /**
  * @brief       Trace les triangles avec la normale pour un obrage linéaire
  * 
@@ -640,6 +661,23 @@ void TracerGaussCurvature(void){
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glColor3f(0.2f, 0.2f, 0.9f);
         TracerTrianglesBasique();
+
+
+}
+
+
+void TracerCarrauxClassique(void){
+
+        DecalageArriereActivation();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            TracerTrianglesCarreauxClassique();  // Tracé en mode carreaux
+        DecalageArriereDesactivation();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glColor3f(ogl.penColorR,ogl.penColorG, ogl.penColorB);
+        TracerTrianglesBasique();
+
+
+
 
 
 }
@@ -1113,6 +1151,10 @@ void TracerObjet(void){
             break;
         case GAUSS_CURVATURE:{
             TracerGaussCurvature();
+            }
+            break;
+        case CARREAUX_CLASSIQUE:{
+            TracerCarrauxClassique();
             }
             break;
     }

@@ -4,11 +4,38 @@
 #include "mesh.h"
 #include "math_utils.h"
 #include <math.h>
+#include <time.h>
 
 
 
 
 Mesh msh;
+
+void InitialiserCouleursCarreaux(Mesh *msh)
+{
+    int i;
+    // Allocation mémoire pour les couleurs RGB (3 floats par couleur)
+    msh->couleurs_carreaux = (float*)malloc(msh->nb_couleurs_carreaux * 3 * sizeof(float));
+    if (!msh->couleurs_carreaux) {
+        printf("Erreur: impossible d'allouer la mémoire pour les couleurs des carreaux\n");
+        return;
+    }
+    
+    // Initialisation du générateur de nombres aléatoires
+    srand((unsigned int)time(NULL));
+    
+    // Génération de couleurs RGB vives aléatoires
+    for (i = 0; i < msh->nb_couleurs_carreaux; i++) {
+        int base = i * 3;
+        
+        // Génération RGB directe dans la plage [0.15, 0.85] pour des couleurs vives
+        msh->couleurs_carreaux[base + 0] = 0.15f + 0.7f * ((float)rand() / RAND_MAX); // R
+        msh->couleurs_carreaux[base + 1] = 0.15f + 0.7f * ((float)rand() / RAND_MAX); // G
+        msh->couleurs_carreaux[base + 2] = 0.15f + 0.7f * ((float)rand() / RAND_MAX); // B
+    }
+    
+    printf("Couleurs des carreaux initialisées : %d couleurs RGB vives aléatoires\n", msh->nb_couleurs_carreaux);
+}
 
 void InitializeMesh(Mesh *msh)  /* Initialisation de la struture mesh */
 {
@@ -31,6 +58,11 @@ void InitializeMesh(Mesh *msh)  /* Initialisation de la struture mesh */
     msh->carreaux = NULL;
     msh->curvature_min = 0;
     msh->curvature_max = 0;
+
+
+    msh->couleurs_carreaux = NULL;
+    msh->nb_couleurs_carreaux = 30;
+    InitialiserCouleursCarreaux(msh);
 }
 
 void ReadMesh(Mesh *msh, char **argv) /* lecture du fichier au format mesh INRIA Gamma3*/
@@ -98,6 +130,8 @@ void ReadMesh(Mesh *msh, char **argv) /* lecture du fichier au format mesh INRIA
             {
                 ii = 3 * i;
                 fscanf(file, "%d %d %d %d", &(msh->triangles[ii]), &(msh->triangles[ii+1]), &(msh->triangles[ii+2]), &(msh->carreaux[i]));
+                printf("Triangle %d, carreau = %d\n",i,msh->carreaux[i]);
+
                 for (j=0; j<3; j++)
                     msh->triangles[ii+j]--;
             }
@@ -329,7 +363,7 @@ void SetCurvature(Mesh *msh) {
         }
         else if (msh->curvature_v[i] > msh->curvature_max) msh->curvature_max = msh->curvature_v[i];
 
-        printf("Curvature[%d] = %f\n",i,msh->curvature_v[i]);
+        //printf("Curvature[%d] = %f\n",i,msh->curvature_v[i]);
     }
     printf("Min curvature : %f\nMax curvature : %f\n",msh->curvature_min,msh->curvature_max);
     //msh->curvature_min /= 10;

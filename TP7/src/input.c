@@ -99,6 +99,14 @@ void Keyboard(unsigned char key, int x, int y){
             glutPostRedisplay();
             MatriceProjection();
             break;
+        case 'C':
+            ogl.renderMode = CARREAUX_CLASSIQUE;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
+
+
+            
         
 
         case 'a':
