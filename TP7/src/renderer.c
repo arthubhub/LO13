@@ -425,10 +425,37 @@ void TracerTrianglesCarreauxClassique(void) {
         int carreau_id     = msh.carreaux[i];
         int couleur_index  = carreau_id % msh.nb_couleurs_carreaux;
         int base = couleur_index * 3;
-        
+        //printf("Triangle %d, carreau = %d\n",i,carreau_id);
+
         r = msh.couleurs_carreaux[base + 0];
         g = msh.couleurs_carreaux[base + 1];
         b = msh.couleurs_carreaux[base + 2];
+
+        glColor3f(r, g, b); 
+        k = 3 * i;
+        TracerTriangleUnique(k);
+    }
+    glEnd();
+}
+
+void TracerTrianglesCarreauxFun(void) {
+    int i, k;
+    float r,g,b;
+    glBegin(GL_TRIANGLES);
+    for (i = 0; i < msh.number_of_triangles; i++) {
+        
+        //printf("Triangle %d, carreau = %d\n",i,carreau_id);
+        if (ogl.current_carreau == msh.carreaux[i]){
+            r = 1.0f;
+            g = 0.0f;
+            b = 0.0f;
+        }
+        else {
+            r = 0.0f;
+            g = 0.0f;
+            b = 1.0f;
+
+        }
 
         glColor3f(r, g, b); 
         k = 3 * i;
@@ -672,12 +699,23 @@ void TracerCarrauxClassique(void){
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             TracerTrianglesCarreauxClassique();  // Tracé en mode carreaux
         DecalageArriereDesactivation();
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        /*glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glColor3f(ogl.penColorR,ogl.penColorG, ogl.penColorB);
-        TracerTrianglesBasique();
+        TracerTrianglesBasique();*/
+
+}
+
+void TracerCarreauxFun(void){
+
+    DecalageArriereActivation();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        TracerTrianglesCarreauxFun();  // Tracé en mode carreaux fun
+    DecalageArriereDesactivation();
 
 
-
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glColor3f(ogl.penColorR,ogl.penColorG, ogl.penColorB);
+    TracerTrianglesBasique();
 
 
 }
@@ -1157,6 +1195,11 @@ void TracerObjet(void){
             TracerCarrauxClassique();
             }
             break;
+
+        case CARREAUX_FUN:{
+            TracerCarreauxFun();
+        }
+        break;
     }
 }
 

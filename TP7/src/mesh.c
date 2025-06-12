@@ -62,6 +62,7 @@ void InitializeMesh(Mesh *msh)  /* Initialisation de la struture mesh */
 
     msh->couleurs_carreaux = NULL;
     msh->nb_couleurs_carreaux = 30;
+    msh->nb_carreaux = 0;
     InitialiserCouleursCarreaux(msh);
 }
 
@@ -130,8 +131,9 @@ void ReadMesh(Mesh *msh, char **argv) /* lecture du fichier au format mesh INRIA
             {
                 ii = 3 * i;
                 fscanf(file, "%d %d %d %d", &(msh->triangles[ii]), &(msh->triangles[ii+1]), &(msh->triangles[ii+2]), &(msh->carreaux[i]));
-                printf("Triangle %d, carreau = %d\n",i,msh->carreaux[i]);
-
+                if (msh->carreaux[i]>msh->nb_carreaux) {
+                    msh->nb_carreaux = msh->carreaux[i];
+                } 
                 for (j=0; j<3; j++)
                     msh->triangles[ii+j]--;
             }

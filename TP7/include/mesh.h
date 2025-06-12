@@ -30,6 +30,7 @@ typedef struct mesh {
 
     float *couleurs_carreaux;
     int nb_couleurs_carreaux;
+    int nb_carreaux;
 } Mesh;
 
 extern Mesh msh;
