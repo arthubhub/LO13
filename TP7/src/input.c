@@ -106,7 +106,7 @@ void Keyboard(unsigned char key, int x, int y){
             break;
         case 'F':
             ogl.renderMode = CARREAUX_FUN;
-            ogl.current_carreau = (ogl.current_carreau +1)%msh.nb_carreaux;
+            ogl.current_carreau = 0;
             glutPostRedisplay();
             MatriceProjection();
             break;

@@ -184,4 +184,5 @@ void Display(void) {
     // Zbuffer Off
     ZbufferDesactivation();
     ViderMemoireEcran();
+    glutPostRedisplay();
 }

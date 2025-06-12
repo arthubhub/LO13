@@ -348,18 +348,25 @@ void SetCurvature(Mesh *msh) {
     for (i = 0; i < nV; ++i)
         msh->curvature_v[i] = 0.0f;
 
-    for (i = 0; i < nT; ++i) {
+    for (i = 0; i < nT; ++i) { // pour chaque triangle
         int base = 3*i;
-        for (j = 0; j < 3; ++j) {
-            vi = msh->triangles[base + j];
+        for (j = 0; j < 3; ++j) { // pour chacun des sommets
+            vi = msh->triangles[base + j]; // numéro du sommet 
             msh->curvature_v[vi] += msh->alpha_t[base + j]; // -> ii+j dans le code du prof
             
         }
     }
-    for (i = 0; i < nV; ++i) {
-        msh->curvature_v[i] = (float)(2.0 * M_PI - msh->curvature_v[i]);
-        if (msh->curvature_v[i]<-0.5f) msh->curvature_v[i]=-0.5f;
-        if (msh->curvature_v[i]>0.5f) msh->curvature_v[i]=0.5f;
+
+    for (i = 0; i < nV; ++i) { // pour chaque sommet
+        msh->curvature_v[i] = (float)(2.0 * M_PI - msh->curvature_v[i]); // curv[i] = 2 pi - curv[i]
+
+        // tronquage
+        float limit = M_PI/50;
+
+        if (msh->curvature_v[i]<-limit) msh->curvature_v[i]=-limit;
+        if (msh->curvature_v[i]>limit) msh->curvature_v[i]=limit;
+
+        // calcul des min et max :
         if (msh->curvature_v[i] < msh->curvature_min){ 
             msh->curvature_min = msh->curvature_v[i];
         }
