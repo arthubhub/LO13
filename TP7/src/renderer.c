@@ -1220,6 +1220,7 @@ void TracerObjet(void){
         case CARREAUX_FUN:{
             TracerCarreauxFun();
             ogl.current_carreau = (ogl.current_carreau+1)+msh.nb_carreaux;
+            glutPostRedisplay();
         }
         break;
     }
