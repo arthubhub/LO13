@@ -53,7 +53,11 @@ void InitialiserOption4_Ombres(void){
 }
 
 void InitialiserOption8_Diffusion(void){
-    ogl.nb_lignes_diffusion=20;
+
+    int diffusion;
+
+
+    diffusion = 20;
 
     float norm_src = Norm(ogl.src.position);
     ogl.source_normalisee[0] = ogl.src.position[0]/norm_src;
@@ -62,6 +66,7 @@ void InitialiserOption8_Diffusion(void){
 
     printf("----------\nSource normalisée :\nx = %f\ny = %f\nz = %f\n----------\n",ogl.source_normalisee[0],ogl.source_normalisee[1],ogl.source_normalisee[2]);
     printf("Norme de la source normalisée : %f\n",Norm(ogl.source_normalisee));
+    ogl.nb_lignes_diffusion=diffusion/2;
 }
 
 void InitialiserMateriaux(void){
