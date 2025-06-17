@@ -108,11 +108,11 @@ est toujours fixée à 1.0.*/
 
 
 
-    /* steel */
-    // this one is more a grey plastic than real steel
+    /*steel */
+    // this one is more a grey plastic than realsteel
     // Name 	        Ambient 	                Diffuse 	                Specular 	                        Shininess
-    // steel 	        0.23125 	0.23125 	0.23125 	0.2775 	0.2775 	0.2775 	0.773911 	0.773911 	0.773911 	0.6
-    ogl.steel.ambient[0]=0.23125;
+    //steel 	        0.23125 	0.23125 	0.23125 	0.2775 	0.2775 	0.2775 	0.773911 	0.773911 	0.773911 	0.6
+    /*ogl.steel.ambient[0]=0.23125;
     ogl.steel.ambient[1]=0.23125;
     ogl.steel.ambient[2]=0.27;
     ogl.steel.diffuse[0]=0.2775;
@@ -125,7 +125,74 @@ est toujours fixée à 1.0.*/
 
     ogl.steel.ambient[3]=1;
     ogl.steel.diffuse[3]=1;
-    ogl.steel.specular[3]=1;
+    ogl.steel.specular[3]=1;*/
+
+
+    //Polished  steel
+    ogl.steel.ambient[0]  = 0.23125f;
+    ogl.steel.ambient[1]  = 0.23125f;
+    ogl.steel.ambient[2]  = 0.23125f;
+    ogl.steel.diffuse[0]  = 0.2775f;
+    ogl.steel.diffuse[1]  = 0.2775f;
+    ogl.steel.diffuse[2]  = 0.2775f;
+    ogl.steel.specular[0] = 0.773911f;
+    ogl.steel.specular[1] = 0.773911f;
+    ogl.steel.specular[2] = 0.773911f;
+    ogl.steel.shininess   = 89.6f; // valeur typique pour surface très brillante
+
+    ogl.steel.ambient[3]  = 1.0f;
+    ogl.steel.diffuse[3]  = 1.0f;
+    ogl.steel.specular[3] = 1.0f;
+
+    //  steel (argent mat)
+    /*ogl.steel.ambient[1]  = 0.19225f;
+    ogl.steel.ambient[0]  = 0.19225f;
+    ogl.steel.ambient[2]  = 0.19225f;
+    ogl.steel.diffuse[0]  = 0.50754f;
+    ogl.steel.diffuse[1]  = 0.50754f;
+    ogl.steel.diffuse[2]  = 0.50754f;
+    ogl.steel.specular[0] = 0.508273f;
+    ogl.steel.specular[1] = 0.508273f;
+    ogl.steel.specular[2] = 0.508273f;
+    ogl.steel.shininess   = 51.2f;
+    ogl.steel.ambient[3]  = 1.0f;
+    ogl.steel.diffuse[3]  = 1.0f;
+    ogl.steel.specular[3] = 1.0f;*/
+
+    // steel (acier miroir)
+    /*ogl.steel.ambient[0]  = 0.25f;
+    ogl.steel.ambient[1]  = 0.25f;
+    ogl.steel.ambient[2]  = 0.25f;
+    ogl.steel.diffuse[0]  = 0.4f;
+    ogl.steel.diffuse[1]  = 0.4f;
+    ogl.steel.diffuse[2]  = 0.4f;
+    ogl.steel.specular[0] = 0.774597f;
+    ogl.steel.specular[1] = 0.774597f;
+    ogl.steel.specular[2] = 0.774597f;
+    ogl.steel.shininess   = 76.8f;
+    ogl.steel.ambient[3]  = 1.0f;
+    ogl.steel.diffuse[3]  = 1.0f;
+    ogl.steel.specular[3] = 1.0f;*/
+
+    // steel (métal sombre)
+    /*ogl.steel.ambient[0]  = 0.105882f;
+    ogl.steel.ambient[1]  = 0.058824f;
+    ogl.steel.ambient[2]  = 0.113725f;
+    ogl.steel.diffuse[0]  = 0.427451f;
+    ogl.steel.diffuse[1]  = 0.470588f;
+    ogl.steel.diffuse[2]  = 0.541176f;
+    ogl.steel.specular[0] = 0.333333f;
+    ogl.steel.specular[1] = 0.333333f;
+    ogl.steel.specular[2] = 0.521569f;
+    ogl.steel.shininess   = 9.84615f;
+    ogl.steel.ambient[3]  = 1.0f;
+    ogl.steel.diffuse[3]  = 1.0f;
+    ogl.steel.specular[3] = 1.0f;*/
+
+
+
+
+
 
     ogl.current_mat = &(ogl.plastic); // Materiau par défaut
 }
