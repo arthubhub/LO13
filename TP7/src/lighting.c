@@ -1,6 +1,8 @@
 #include <GL/glut.h>
 #include <string.h>
+#include <stdio.h>
 #include "lighting.h"
+#include "math_utils.h"
 #include "opengl_state.h"  // Defines 'extern Opengl ogl;'
 
 /*
@@ -21,14 +23,12 @@
         ogl.src.specular[i]=1;
     }
 
-
     ogl.src.ambient[3]=1;
     ogl.src.diffuse[3]=1;
     ogl.src.specular[3]=1;
     ogl.src.position[3]=0.0f; // position à l'infini
 
 
-    ogl.src.position[0]=-5.0f;
 
 }
 
@@ -49,6 +49,18 @@ void InitialiserOption4_Ombres(void){
     ogl.Po[10] =  1.0f;
     ogl.Po[11] =  1/d;  
 
+}
+
+void InitialiserOption8_Diffusion(void){
+    ogl.nb_lignes_diffusion=50;
+
+    float norm_src = Norm(ogl.src.position);
+    ogl.source_normalisee[0] = ogl.src.position[0]/norm_src;
+    ogl.source_normalisee[1] = ogl.src.position[1]/norm_src;
+    ogl.source_normalisee[2] = ogl.src.position[2]/norm_src;
+
+    printf("----------\nSource normalisée :\nx = %f\ny = %f\nz = %f\n----------\n",ogl.source_normalisee[0],ogl.source_normalisee[1],ogl.source_normalisee[2]);
+    printf("Norme de la source normalisée : %f\n",Norm(ogl.source_normalisee));
 }
 
 void InitialiserMateriaux(void){

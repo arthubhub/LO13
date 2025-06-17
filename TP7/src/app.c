@@ -197,6 +197,7 @@ void ReinitialisationParamGraphiques(void) {
     InitialiserMateriaux();
     InitialiserOption5_Repere();
     InitialiserOption6_Carreau();
+    InitialiserOption8_Diffusion();
 }
 
 
@@ -289,6 +290,11 @@ void InitialiserParametresGraphiques(void) {
 
     /* option 7 : carreaux*/
     InitialiserOption6_Carreau();
+
+    /* option 8 : diffusion*/
+    InitialiserOption8_Diffusion();
+
+    
 
 
 }

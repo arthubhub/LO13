@@ -110,6 +110,11 @@ void Keyboard(unsigned char key, int x, int y){
             glutPostRedisplay();
             MatriceProjection();
             break;
+        case 'D':
+            ogl.renderMode = DIFFUSION;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
         case 'a':
             ogl.current_mat=&(ogl.steel);
             glutPostRedisplay();
