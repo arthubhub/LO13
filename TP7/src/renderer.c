@@ -701,8 +701,8 @@ void TracerGaussCurvature(void){
 
         DecalageArriereActivation();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            //TracerTrianglesSubdivises();  // Tracé en mode remplissage
-            TracerTrianglesDegGauss();
+            TracerTrianglesSubdivises();  // Tracé en mode remplissage
+            //TracerTrianglesDegGauss();
         DecalageArriereDesactivation();
 
     
