@@ -5,6 +5,58 @@
 #include "opengl_state.h"
 #include "renderer.h" 
 
+const char* helpText[] = {
+    "Commandes clavier :",
+    "",
+    " q, Q ou Échap   : Quitter",
+    " z              : Zoom avant",
+    " Z              : Zoom arrière",
+    "",
+    " 0              : Filaire (STPC)",
+    " 1              : Filaire (ATPC)",
+    " 2              : Solide dégradé (ATPC)",
+    " 3              : Solide +  Filaire (ATPC)",
+    " 4              : Ombrage constant",
+    " 5              : Ombrage constant +  Filaire",
+    " 6              : Filaire <- ombrage constant",
+    " 7              : Ombrage Phong",
+    " 8              : Phong +  Filaire",
+    " 9              : Filaire <- Phong",
+    " g              : Courbure de Gauss",
+    " C              : Carreaux classiques",
+    " F              : Carreaux fun",
+    " D              : Lignes de diffusion",
+    "",
+    " a, c, p        : Changer matériau (acier, cuivre, plastique)",
+    "",
+    " s, S           : Shrink (réduction géométrique)",
+    " i              : Réinitialiser paramètres graphiques",
+    "",
+    " P              : Activer/désactiver projection",
+    " l              : Activer/désactiver miroirs",
+    " k              : Activer/désactiver ombres",
+    "",
+    " r              : Afficher/masquer repère",
+    "",
+    "Utilise ces touches pour explorer les différents modes de rendu.",
+    NULL
+};
+
+void AfficherAide(void) {
+    // Texte en noir
+    glColor3f(0, 0, 0);
+    
+    // Position de départ (en bas à gauche de l’écran 2D)
+    glRasterPos2i(10, ogl.winSizeY - 20);
+    
+    for (int i = 0; helpText[i] != NULL; ++i) {
+        for (const char* p = helpText[i]; *p; ++p) {
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, *p);
+        }
+        // Descendre d’une ligne (15 pixels environ)
+        glRasterPos2i(10, ogl.winSizeY - 20 - (i+1)*15);
+    }
+}
 
 
 
@@ -175,13 +227,41 @@ void Display(void) {
     EffacerEcran();
     // Zbuffer On
     ZbufferActivation();
-    // repere
-    TracerRepere();
-    // Objet
-    TracerObjetBasique();
-    // Modes de projections, miroirs, plans, ombre ...
-    TracerProjOptions();
+        // repere
+        TracerRepere();
+        // Objet
+        TracerObjetBasique();
+        // Modes de projections, miroirs, plans, ombre ...
+        TracerProjOptions();
     // Zbuffer Off
     ZbufferDesactivation();
+
+
+    if (ogl.aide){
+        glMatrixMode(GL_PROJECTION);
+        glPushMatrix();
+        glLoadIdentity();
+        gluOrtho2D(0, ogl.winSizeX, 0, ogl.winSizeY);
+
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+            glLoadIdentity();
+            glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_LIGHTING_BIT);
+            glDisable(GL_DEPTH_TEST);
+            glDisable(GL_LIGHTING);
+            AfficherAide();
+            glPopAttrib();
+        glPopMatrix();
+        glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+
+
+    }
+
+
+
+
+    
     ViderMemoireEcran();
 }

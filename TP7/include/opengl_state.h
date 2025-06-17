@@ -120,6 +120,9 @@ typedef struct opengl {
     float source_normalisee[3];
 
 
+    /* aide*/
+    int aide;
+
 } Opengl;
 
 /* Global instance */
