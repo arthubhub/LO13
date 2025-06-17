@@ -4,11 +4,38 @@
 #include "mesh.h"
 #include "math_utils.h"
 #include <math.h>
+#include <time.h>
 
 
 
 
 Mesh msh;
+
+void InitialiserCouleursCarreaux(Mesh *msh)
+{
+    int i;
+    // Allocation mémoire pour les couleurs RGB (3 floats par couleur)
+    msh->couleurs_carreaux = (float*)malloc(msh->nb_couleurs_carreaux * 3 * sizeof(float));
+    if (!msh->couleurs_carreaux) {
+        printf("Erreur: impossible d'allouer la mémoire pour les couleurs des carreaux\n");
+        return;
+    }
+    
+    // Initialisation du générateur de nombres aléatoires
+    srand((unsigned int)time(NULL));
+    
+    // Génération de couleurs RGB vives aléatoires
+    for (i = 0; i < msh->nb_couleurs_carreaux; i++) {
+        int base = i * 3;
+        
+        // Génération RGB directe dans la plage [0.15, 0.85] pour des couleurs vives
+        msh->couleurs_carreaux[base + 0] = 0.15f + 0.7f * ((float)rand() / RAND_MAX); // R
+        msh->couleurs_carreaux[base + 1] = 0.15f + 0.7f * ((float)rand() / RAND_MAX); // G
+        msh->couleurs_carreaux[base + 2] = 0.15f + 0.7f * ((float)rand() / RAND_MAX); // B
+    }
+    
+    printf("Couleurs des carreaux initialisées : %d couleurs RGB vives aléatoires\n", msh->nb_couleurs_carreaux);
+}
 
 void InitializeMesh(Mesh *msh)  /* Initialisation de la struture mesh */
 {
@@ -28,8 +55,15 @@ void InitializeMesh(Mesh *msh)  /* Initialisation de la struture mesh */
     msh->memory = 0;
     msh->error = 0;
     msh->curvature_v = NULL;
+    msh->carreaux = NULL;
     msh->curvature_min = 0;
     msh->curvature_max = 0;
+
+
+    msh->couleurs_carreaux = NULL;
+    msh->nb_couleurs_carreaux = 30;
+    msh->nb_carreaux = 0;
+    InitialiserCouleursCarreaux(msh);
 }
 
 void ReadMesh(Mesh *msh, char **argv) /* lecture du fichier au format mesh INRIA Gamma3*/
@@ -84,6 +118,7 @@ void ReadMesh(Mesh *msh, char **argv) /* lecture du fichier au format mesh INRIA
         {
             fscanf(file, "%d", &(msh->number_of_triangles));
             msh->triangles = (int*)malloc((3*msh->number_of_triangles)*sizeof(int));
+            msh->carreaux  = (int*)malloc((3*msh->number_of_triangles)*sizeof(int));
             if (!msh->triangles)
             {
                 printf("error: not enough memory for %d triangles (%ld bytes)\n", msh->number_of_triangles, 3*msh->number_of_triangles*sizeof(int));
@@ -95,7 +130,10 @@ void ReadMesh(Mesh *msh, char **argv) /* lecture du fichier au format mesh INRIA
             for (i=0; i<msh->number_of_triangles; i++)
             {
                 ii = 3 * i;
-                fscanf(file, "%d %d %d %d", &(msh->triangles[ii]), &(msh->triangles[ii+1]), &(msh->triangles[ii+2]), &j);
+                fscanf(file, "%d %d %d %d", &(msh->triangles[ii]), &(msh->triangles[ii+1]), &(msh->triangles[ii+2]), &(msh->carreaux[i]));
+                if (msh->carreaux[i]>msh->nb_carreaux) {
+                    msh->nb_carreaux = msh->carreaux[i];
+                } 
                 for (j=0; j<3; j++)
                     msh->triangles[ii+j]--;
             }
@@ -310,24 +348,31 @@ void SetCurvature(Mesh *msh) {
     for (i = 0; i < nV; ++i)
         msh->curvature_v[i] = 0.0f;
 
-    for (i = 0; i < nT; ++i) {
+    for (i = 0; i < nT; ++i) { // pour chaque triangle
         int base = 3*i;
-        for (j = 0; j < 3; ++j) {
-            vi = msh->triangles[base + j];
+        for (j = 0; j < 3; ++j) { // pour chacun des sommets
+            vi = msh->triangles[base + j]; // numéro du sommet 
             msh->curvature_v[vi] += msh->alpha_t[base + j]; // -> ii+j dans le code du prof
             
         }
     }
-    for (i = 0; i < nV; ++i) {
-        msh->curvature_v[i] = (float)(2.0 * M_PI - msh->curvature_v[i]);
-        if (msh->curvature_v[i]<-0.5f) msh->curvature_v[i]=-0.5f;
-        if (msh->curvature_v[i]>0.5f) msh->curvature_v[i]=0.5f;
+
+    for (i = 0; i < nV; ++i) { // pour chaque sommet
+        msh->curvature_v[i] = (float)(2.0 * M_PI - msh->curvature_v[i]); // curv[i] = 2 pi - curv[i]
+
+        // tronquage
+        float limit = M_PI/50;
+
+        if (msh->curvature_v[i]<-limit) msh->curvature_v[i]=-limit;
+        if (msh->curvature_v[i]>limit) msh->curvature_v[i]=limit;
+
+        // calcul des min et max :
         if (msh->curvature_v[i] < msh->curvature_min){ 
             msh->curvature_min = msh->curvature_v[i];
         }
         else if (msh->curvature_v[i] > msh->curvature_max) msh->curvature_max = msh->curvature_v[i];
 
-        printf("Curvature[%d] = %f\n",i,msh->curvature_v[i]);
+        //printf("Curvature[%d] = %f\n",i,msh->curvature_v[i]);
     }
     printf("Min curvature : %f\nMax curvature : %f\n",msh->curvature_min,msh->curvature_max);
     //msh->curvature_min /= 10;

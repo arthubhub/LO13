@@ -172,6 +172,9 @@ void InitialiserOption5_Repere(void){
 
 }
 
+void InitialiserOption6_Carreau(void){
+    ogl.current_carreau=1;
+}
 
 
 
@@ -193,6 +196,7 @@ void ReinitialisationParamGraphiques(void) {
     InitialiserOption4_Ombres();
     InitialiserMateriaux();
     InitialiserOption5_Repere();
+    InitialiserOption6_Carreau();
 }
 
 
@@ -282,6 +286,10 @@ void InitialiserParametresGraphiques(void) {
 
     /* option 5 : Miroirs*/
     InitialiserOption5_Repere();
+
+    /* option 7 : carreaux*/
+    InitialiserOption6_Carreau();
+
 
 }
 

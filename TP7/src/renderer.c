@@ -62,29 +62,44 @@ glDisable (GL_POLYGON_OFFSET_FILL);
  * @brief Définit la couleur OpenGL en fonction de la courbure `cur`.
  */
 
-static void SetColorFromCurvature(float cur, float posDenom, float negDenom)
+void SetColorFromCurvature(float cur)
 {
-    float ratio, lratio, r, g, b;
+    float ratio, r, g, b;
 
     if (cur > 0.0f) {
-        ratio = cur / posDenom;
-        ratio = fminf(fmaxf(ratio, 0.0f), 1.0f);
-        //lratio = log1pf(ratio) / log1pf(2.0f); // log1p(1)=log(2)
-        lratio = ratio;
-        r = lratio;         
-        g = 0.0f;          
-        b = 1.0f - lratio;  
+        ratio = cur / msh.curvature_max;
+        // Clamp au cas où
+        if (ratio < 0.0f) ratio = 0.0f;
+        if (ratio > 1.0f) ratio = 1.0f;
+
+        r = 0.0f;
+        g = ratio ;
+        b = 1.0f - ratio;
+
+        /*if (ratio >= 0.9f) {
+            printf("[DEBUG] POS_HIGH: cur=%.6f, max=%.6f, ratio=%.6f -> color=(R:%.3f G:%.3f B:%.3f)\n",
+                   cur, msh.curvature_max, ratio, r, g, b);
+        }*/
     }
     else {
-        ratio = (-cur) / negDenom;
-        ratio = fminf(fmaxf(ratio, 0.0f), 1.0f);
-        //lratio = log1pf(ratio) / log1pf(2.0f);
-        lratio = ratio;
+        ratio = (-cur) / fabsf(msh.curvature_min);
+        // Clamp
+        if (ratio < 0.0f) ratio = 0.0f;
+        if (ratio > 1.0f) ratio = 1.0f;
 
-        r = 0.0f;          
-        g = lratio ;
-        b = 1.0f - (lratio);
+        r = ratio;
+        g = 0.0f;
+        b = 1.0f - ratio;
+
+        /*if (ratio >= 0.9f) {
+            printf("[DEBUG] NEG_HIGH: cur=%.6f, min=%.6f, ratio=%.6f -> color=(R:%.3f G:%.3f B:%.3f)\n",
+                   cur, msh.curvature_min, ratio, r, g, b);
+        }*/
     }
+
+    // Trace systématique à chaque appel
+    /*printf("[DEBUG] cur=%.6f, ratio=%.6f -> color=(R:%.3f G:%.3f B:%.3f)\n",
+           cur, ratio, r, g, b);*/
 
     glColor3f(r, g, b);
 }
@@ -176,7 +191,7 @@ void TracerTriangleUniquePhong(int k) {
     }
 }
 
-void TracerTriangleSubdiviseUnique(int k, float posDenom, float negDenom) {
+void TracerTriangleSubdiviseUnique(int k) {
     int v0 = msh.triangles[k + 0];
     int v1 = msh.triangles[k + 1];
     int v2 = msh.triangles[k + 2];
@@ -227,26 +242,26 @@ void TracerTriangleSubdiviseUnique(int k, float posDenom, float negDenom) {
     float m02[3] = {0.5f * (p0[0] + p2[0]), 0.5f * (p0[1] + p2[1]), 0.5f * (p0[2] + p2[2])};
     
     // Sous triangle sommet 0
-    SetColorFromCurvature(cur0, posDenom, negDenom);
+    SetColorFromCurvature(cur0);
     glVertex3f(p0[0], p0[1], p0[2]);
     glVertex3f(m01[0], m01[1], m01[2]);
     glVertex3f(m02[0], m02[1], m02[2]);
     
     // Sous triangle sommet 1
-    SetColorFromCurvature(cur1, posDenom, negDenom);
+    SetColorFromCurvature(cur1);
     glVertex3f(p1[0], p1[1], p1[2]);
     glVertex3f(m12[0], m12[1], m12[2]);
     glVertex3f(m01[0], m01[1], m01[2]);
     
     // Sous triangle sommet 2
-    SetColorFromCurvature(cur2, posDenom, negDenom);
+    SetColorFromCurvature(cur2);
     glVertex3f(p2[0], p2[1], p2[2]);
     glVertex3f(m02[0], m02[1], m02[2]);
     glVertex3f(m12[0], m12[1], m12[2]);
     
     // Sous triangle milieu
     float curMoyenne = (cur0 + cur1 + cur2) / 3.0f;
-    SetColorFromCurvature(curMoyenne, posDenom, negDenom);
+    SetColorFromCurvature(curMoyenne);
     glVertex3f(m01[0], m01[1], m01[2]);
     glVertex3f(m12[0], m12[1], m12[2]);
     glVertex3f(m02[0], m02[1], m02[2]);
@@ -362,7 +377,7 @@ void TracerTrianglesDegGauss(void) {
 
         float cur = (msh.curvature_v[v0]
                    + msh.curvature_v[v1]
-                   + msh.curvature_v[v2]) * (1.0f/3.0f);
+                   + msh.curvature_v[v2]) /3.0f;
         float ratio;
         float r, g, b;
         if (cur > 0.0f) {
@@ -371,18 +386,19 @@ void TracerTrianglesDegGauss(void) {
             if (ratio < 0.0f) ratio = 0.0f;
             else if (ratio > 1.0f) ratio = 1.0f;
 
-            r = ratio;
-            g = 0.0f;
+            r = 0.0f;
+            g =  ratio;
             b = 1.0f - ratio;
+            
         }
         else {
             ratio = (-cur) / negDenom;
             if (ratio < 0.0f) ratio = 0.0f;
             else if (ratio > 1.0f) ratio = 1.0f;
-
-            r = 0.0f;
-            g =  ratio;
-            b = 1.0f - ratio;
+            r = ratio;
+            g = 0.0f;
+            b = 1.0f - ratio;   
+            
         }
         //printf("ratio : %f\n",ratio);
         glColor3f(r, g, b);
@@ -401,20 +417,72 @@ void TracerTrianglesSubdivises(void)
 {
     int i, k;
     
-    // Normalisation des courbures
-    float posDenom = (msh.curvature_max > 0.0f)
-        ? msh.curvature_max : 1.0f;
-    float negDenom = (msh.curvature_min < 0.0f)
-        ? -msh.curvature_min : 1.0f;
-    
     glBegin(GL_TRIANGLES);
     for (i = 0; i < msh.number_of_triangles; i++) {
         k = 3 * i;
-        TracerTriangleSubdiviseUnique(k, posDenom, negDenom);
+        TracerTriangleSubdiviseUnique(k);
     }
     glEnd();
 }
 
+
+void TracerTrianglesCarreauxClassique(void) {
+    int i, k;
+    float r,g,b;
+    // Boucle sur tous les triangles
+    glBegin(GL_TRIANGLES);
+    for (i = 0; i < msh.number_of_triangles; i++) {
+        int carreau_id     = msh.carreaux[i];
+        int couleur_index  = carreau_id % msh.nb_couleurs_carreaux;
+        int base = couleur_index * 3;
+        //printf("Triangle %d, carreau = %d\n",i,carreau_id);
+
+        r = msh.couleurs_carreaux[base + 0];
+        g = msh.couleurs_carreaux[base + 1];
+        b = msh.couleurs_carreaux[base + 2];
+
+        glColor3f(r, g, b); 
+        k = 3 * i;
+        TracerTriangleUnique(k);
+    }
+    glEnd();
+}
+
+void TracerTrianglesCarreauxFun(void) {
+    int i, k;
+    int tileId, current, nTiles;
+    float r, g, b;
+    
+    current = ogl.current_carreau;
+    nTiles  = msh.nb_carreaux;
+    //printf("ntiles = %d\n",nTiles);
+    //printf("Current : %d\n",current);
+    glBegin(GL_TRIANGLES);
+    for (i = 0; i < msh.number_of_triangles; i++) {
+        tileId = msh.carreaux[i]; 
+        int distMax = 20;
+        int d1 = abs(tileId - current + nTiles) % nTiles;
+        int d2 = abs(current - tileId + nTiles) % nTiles;
+        int dist = (d1 < d2) ? d1 : d2; // on récupère la distance min
+        if (dist <= distMax) {
+            float t = 1.0f - (float)dist / (float)distMax;
+            r = t;
+            g = 0.0f;
+            b = 1.0f - t;
+        }
+        else {
+            r = 0.0f;
+            g = 0.0f;
+            b = 1.0f;
+        }
+
+        glColor3f(r, g, b);
+
+        k = 3 * i;
+        TracerTriangleUnique(k);
+    }
+    glEnd();
+}
 
 /**
  * @brief       Trace les triangles avec la normale pour un obrage linéaire
@@ -634,12 +702,41 @@ void TracerGaussCurvature(void){
         DecalageArriereActivation();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
             TracerTrianglesSubdivises();  // Tracé en mode remplissage
+            //TracerTrianglesDegGauss();
         DecalageArriereDesactivation();
 
     
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glColor3f(0.2f, 0.2f, 0.9f);
         TracerTrianglesBasique();
+
+
+}
+
+
+void TracerCarrauxClassique(void){
+
+        DecalageArriereActivation();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            TracerTrianglesCarreauxClassique();  // Tracé en mode carreaux
+        DecalageArriereDesactivation();
+        /*glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glColor3f(ogl.penColorR,ogl.penColorG, ogl.penColorB);
+        TracerTrianglesBasique();*/
+
+}
+
+void TracerCarreauxFun(void){
+
+    DecalageArriereActivation();
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        TracerTrianglesCarreauxFun();  // Tracé en mode carreaux fun
+    DecalageArriereDesactivation();
+
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glColor3f(ogl.penColorR,ogl.penColorG, ogl.penColorB);
+    TracerTrianglesBasique();
 
 
 }
@@ -1115,6 +1212,17 @@ void TracerObjet(void){
             TracerGaussCurvature();
             }
             break;
+        case CARREAUX_CLASSIQUE:{
+            TracerCarrauxClassique();
+            }
+            break;
+
+        case CARREAUX_FUN:{
+            TracerCarreauxFun();
+            ogl.current_carreau = (ogl.current_carreau+1)+msh.nb_carreaux;
+            glutPostRedisplay();
+        }
+        break;
     }
 }
 

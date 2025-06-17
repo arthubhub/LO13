@@ -19,13 +19,18 @@ typedef struct mesh {
     float   *alpha_t;     
     float   *normal_t;     
     float   *curvature_v;
+    int     *carreaux;
     float   curvature_min;
     float   curvature_max;
     float    ccenter[3];    
     float    cmin[3], cmax[3];    
     float    delta;     
     long     memory;     
-    int      error;     
+    int      error;    
+
+    float *couleurs_carreaux;
+    int nb_couleurs_carreaux;
+    int nb_carreaux;
 } Mesh;
 
 extern Mesh msh;
@@ -43,5 +48,11 @@ void defineCube(void);
 void ModeleDiscret(Mesh *msh, char **argv);
 
 void SetCurvature(Mesh *msh);
+
+
+void InitialiserCouleursCarreaux(Mesh *msh);
+void LibererCouleursCarreaux(void);
+void SetColorFromCarreau(int numero_carreau);
+
 
 #endif // MESH_H

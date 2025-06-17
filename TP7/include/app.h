@@ -30,6 +30,7 @@ void InitialiserOption2_Projections(void);
 void InitialiserOption3_Projections(void);
 void InitialiserOption3_Normales(void);
 void InitialiserChangementRepere(void);
+void InitialiserOption6_Carreau(void);
 
 
 void ReinitialisationParamGraphiques(void);

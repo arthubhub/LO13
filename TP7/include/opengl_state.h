@@ -18,7 +18,9 @@ typedef enum {
     OMBRAGE_PHONG,
     OMBRAGE_PHONG_FILAIRE,
     OMBRAGE_FILAIRE_PHONG,
-    GAUSS_CURVATURE
+    GAUSS_CURVATURE,
+    CARREAUX_CLASSIQUE,
+    CARREAUX_FUN
 } RenderMode;
 
 /**
@@ -108,6 +110,9 @@ typedef struct opengl {
 
     /* option 5 : Axes*/
     int repere;
+
+    /* option 7 : carreaux*/
+    int current_carreau;
     
 
 
