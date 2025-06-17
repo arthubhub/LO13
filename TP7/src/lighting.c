@@ -23,6 +23,7 @@
         ogl.src.specular[i]=1;
     }
 
+    
     ogl.src.ambient[3]=1;
     ogl.src.diffuse[3]=1;
     ogl.src.specular[3]=1;
@@ -52,7 +53,7 @@ void InitialiserOption4_Ombres(void){
 }
 
 void InitialiserOption8_Diffusion(void){
-    ogl.nb_lignes_diffusion=50;
+    ogl.nb_lignes_diffusion=20;
 
     float norm_src = Norm(ogl.src.position);
     ogl.source_normalisee[0] = ogl.src.position[0]/norm_src;

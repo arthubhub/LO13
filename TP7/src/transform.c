@@ -90,7 +90,7 @@ void MatriceVueOmbre(const float* projectionMatrix, const char* matrixName){
     
     // Multiplier par la matrice de projection
     glMultMatrixf(projectionMatrix);
-    PrintMatrix4x4(matrixName, projectionMatrix);
+    //PrintMatrix4x4(matrixName, projectionMatrix);
 
     // Appliquer Tso
     glTranslatef(-ogl.src.position[0],-ogl.src.position[1],-ogl.src.position[2]);
@@ -98,8 +98,8 @@ void MatriceVueOmbre(const float* projectionMatrix, const char* matrixName){
     
     // Multiplier par Tchr-1
     glMultMatrixf(ogl.Tchr_1);
-    PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
-    PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
+    //PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
+    //PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
     
     // Multiplier par Tg
     glMultMatrixf(ogl.geometricTransformations);
@@ -120,12 +120,12 @@ void MatriceVueProjection(const float* projectionMatrix, const char* matrixName)
     
     // Multiplier par la matrice de projection (Px, Py, ou Pz, Sx, Sy ou Sz)
     glMultMatrixf(projectionMatrix);
-    PrintMatrix4x4(matrixName, projectionMatrix);
+    //PrintMatrix4x4(matrixName, projectionMatrix);
     
     // Multiplier par Tchr-1
     glMultMatrixf(ogl.Tchr_1);
-    PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
-    PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
+    //PrintMatrix4x4("ogl.Tchr_1", ogl.Tchr_1);
+    //PrintMatrix4x4("ogl.Tchr", ogl.Tchr);
     
     // Multiplier par Tg
     glMultMatrixf(ogl.geometricTransformations);

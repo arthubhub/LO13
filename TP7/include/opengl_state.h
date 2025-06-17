@@ -20,7 +20,8 @@ typedef enum {
     OMBRAGE_FILAIRE_PHONG,
     GAUSS_CURVATURE,
     CARREAUX_CLASSIQUE,
-    CARREAUX_FUN
+    CARREAUX_FUN,
+    DIFFUSION
 } RenderMode;
 
 /**
@@ -114,6 +115,9 @@ typedef struct opengl {
     /* option 7 : carreaux*/
     int current_carreau;
     
+    /* option 8 : nombre de lignes de diffusion*/
+    int nb_lignes_diffusion;
+    float source_normalisee[3];
 
 
 } Opengl;

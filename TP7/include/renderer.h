@@ -35,6 +35,13 @@ void TracerPointsDegGauss(void);
 void TracerGaussCurvature(void);
 void TracerCarrauxClassique(void);
 void TracerTrianglesSubdivises(void);
+
+
+
+
+float CalculerId(int sommet_id);
+void TracerLigneCible(float Id_cible);
+void TracerDiffusion(void);
 void SetColorFromCurvature(float cur);
 
 //modes de tracé

@@ -25,7 +25,7 @@ typedef struct {
 void InitialiserSourceLumineuse(void);
 
 void InitialiserOption4_Ombres(void);
-
+void InitialiserOption8_Diffusion(void);
 /* Initialize predefined materials (ogl.plastic, ogl.copper, ogl.steel) */
 void InitialiserMateriaux(void);
 
