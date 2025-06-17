@@ -176,6 +176,11 @@ void InitialiserOption6_Carreau(void){
     ogl.current_carreau=1;
 }
 
+void InitialiserAide(void){
+    ogl.aide=1;
+
+}
+
 
 
 void ReinitialisationParamGraphiques(void) {
@@ -197,6 +202,8 @@ void ReinitialisationParamGraphiques(void) {
     InitialiserMateriaux();
     InitialiserOption5_Repere();
     InitialiserOption6_Carreau();
+    InitialiserOption8_Diffusion();
+    InitialiserAide();
 }
 
 
@@ -289,6 +296,15 @@ void InitialiserParametresGraphiques(void) {
 
     /* option 7 : carreaux*/
     InitialiserOption6_Carreau();
+
+    /* option 8 : diffusion*/
+    InitialiserOption8_Diffusion();
+
+
+    /* aide */
+    InitialiserAide();
+
+    
 
 
 }

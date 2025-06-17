@@ -742,6 +742,174 @@ void TracerCarreauxFun(void){
 }
 
 
+float CalculerId(int vertex_index) {
+    int real_base = 3 * vertex_index;
+    float nx = msh.normal_v[real_base]   ;
+    float ny = msh.normal_v[real_base+1] ;
+    float nz = msh.normal_v[real_base+2] ;
+
+    
+
+    return nx*ogl.source_normalisee[0]
+        + ny*ogl.source_normalisee[1]
+        + nz*ogl.source_normalisee[2];
+}
+
+void TracerLigneCible(float Id_cible) {
+    float Points[9];
+    int nb_points;
+
+    // Pour chaque triangle
+    for (int i = 0; i < msh.number_of_triangles; i++) {
+        int k = 3 * i;
+
+        // indices virtuels des 3 sommets
+        int triangle_a = msh.triangles[k + 0];
+        int triangle_b = msh.triangles[k + 1];
+        int triangle_c = msh.triangles[k + 2];
+        /*printf("triangle_a : %d\n",triangle_a);
+        printf("triangle_b : %d\n",triangle_b);
+        printf("triangle_c : %d\n",triangle_c);*/
+
+        // pointeurs vers les positions x,y,z de chaque sommet
+        float *Pa = &msh.vertices[3 * triangle_a];
+        float *Pb = &msh.vertices[3 * triangle_b];
+        float *Pc = &msh.vertices[3 * triangle_c];
+
+        /*printf("Pa : %p\n",Pa);
+        printf("Pb : %p\n",Pb);
+        printf("Pc : %p\n",Pc);*/
+
+        // calcul des Id diffusés aux sommets
+        float Id_a = CalculerId( msh.triangles[k+0] );
+        float Id_b = CalculerId( msh.triangles[k+1] );
+        float Id_c = CalculerId( msh.triangles[k+2] );
+
+        /*printf("Id_a : %f\n",Id_a);
+        printf("Id_b : %f\n",Id_b);
+        printf("Id_c : %f\n",Id_c);*/
+
+        // on convertit en V = Id/Id_cible - 1 pour checker le signe
+        float Va = Id_a - Id_cible;
+        float Vb = Id_b - Id_cible;
+        float Vc = Id_c - Id_cible;
+        /*printf("Va : %f\n",Va);
+        printf("Vb : %f\n",Vb);
+        printf("Vc : %f\n",Vc);*/
+
+
+        nb_points = 0;
+
+        // arête (a,b)
+        if (Va * Vb < 0.0f) {
+            if (Va < 0) {
+                float t = - Va / (Vb - Va);
+                Points[3*nb_points + 0] = Pa[0] + t * (Pb[0] - Pa[0]); // (1-t)*S0 + t*S1 = Pa + t*(Pb-Pa)
+                Points[3*nb_points + 1] = Pa[1] + t * (Pb[1] - Pa[1]);
+                Points[3*nb_points + 2] = Pa[2] + t * (Pb[2] - Pa[2]);
+            }
+            else {
+                float t = Va / (Va - Vb);
+                Points[3*nb_points + 0] = Pa[0] + t * (Pb[0] - Pa[0]); // (1-t)*S0 + t*S1 = Pa + t*(Pb-Pa)
+                Points[3*nb_points + 1] = Pa[1] + t * (Pb[1] - Pa[1]);
+                Points[3*nb_points + 2] = Pa[2] + t * (Pb[2] - Pa[2]);
+            }
+            nb_points++;
+        }
+
+        // arête (b,c)
+        if (Vb * Vc < 0.0f) {
+            if (Vb < 0) {
+                float t = - Vb / (Vc - Vb);
+                Points[3*nb_points + 0] = Pb[0] + t * (Pc[0] - Pb[0]);
+                Points[3*nb_points + 1] = Pb[1] + t * (Pc[1] - Pb[1]);
+                Points[3*nb_points + 2] = Pb[2] + t * (Pc[2] - Pb[2]);
+            }
+            else {
+                float t = Vb / (Vb - Vc);
+                Points[3*nb_points + 0] = Pb[0] + t * (Pc[0] - Pb[0]);
+                Points[3*nb_points + 1] = Pb[1] + t * (Pc[1] - Pb[1]);
+                Points[3*nb_points + 2] = Pb[2] + t * (Pc[2] - Pb[2]);
+            }
+            nb_points++;
+
+        }
+
+        // arête (c,a)
+        if (Vc * Va < 0.0f) {
+            if (Va < 0) {
+                float t = - Va / (Vc - Va);
+                Points[3*nb_points + 0] = Pa[0] + t * (Pc[0] - Pa[0]);
+                Points[3*nb_points + 1] = Pa[1] + t * (Pc[1] - Pa[1]);
+                Points[3*nb_points + 2] = Pa[2] + t * (Pc[2] - Pa[2]);
+            }
+            else {
+                float t = Va / (Va - Vc);
+                Points[3*nb_points + 0] = Pa[0] + t * (Pc[0] - Pa[0]);
+                Points[3*nb_points + 1] = Pa[1] + t * (Pc[1] - Pa[1]);
+                Points[3*nb_points + 2] = Pa[2] + t * (Pc[2] - Pa[2]);
+            }
+            nb_points++;
+        }
+        
+        // dessin des segments
+        if (nb_points == 2) {
+            glVertex3f(Points[0], Points[1], Points[2]);
+            glVertex3f(Points[3], Points[4], Points[5]);
+        }
+        else if (nb_points == 3) {
+            // si les deux premiers points ne sont pas les memes, on les dessine
+            if ((Points[0] != Points[3 + 0]) || (Points[1] != Points[3 + 1]) || (Points[2] != Points[3 + 2])){
+                glVertex3f(Points[0], Points[1], Points[2]);
+                glVertex3f(Points[3], Points[4], Points[5]);
+            }
+            //sinon on dessine le 1 et le 3
+            else {                
+                glVertex3f(Points[0], Points[1], Points[2]);
+                glVertex3f(Points[6], Points[7], Points[8]);
+            }
+
+            printf(" NB de points = 3\n");
+        }
+        //printf("NB points : %d\n",nb_points);
+        
+        // sinon nb_points < 2 => pas de segment
+    }
+}
+
+
+void TracerDiffusion(void){
+    float Id_cible, r, g, b, t;
+
+    DecalageArriereActivation();
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glColor3f(ogl.bgColorR, ogl.bgColorG, ogl.bgColorB);
+            
+            TracerTrianglesBasique();  // Tracé en mode remplissage
+    DecalageArriereDesactivation();
+
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glBegin(GL_LINES);
+
+    for (int i = - ogl.nb_lignes_diffusion ; i <= ogl.nb_lignes_diffusion; ++i) {
+        t = (float)i / (float)ogl.nb_lignes_diffusion; // normalisé entre 0 et 1
+        Id_cible = t;
+
+        r = 0.5f + 0.5f * sinf(M_PI * t + 0.0f);
+        g = 0.5f + 0.5f * sinf(M_PI * t + 2.0f * M_PI / 3.0f);
+        b = 0.5f + 0.5f * sinf(M_PI * t + 4.0f * M_PI / 3.0f);
+
+        glColor3f(r, g, b);
+        TracerLigneCible(Id_cible);
+    }
+
+    glEnd();
+    
+
+}
+
+
 void DessinerPlans(void){
     int i;
     int pas = 10; // >0
@@ -1218,9 +1386,19 @@ void TracerObjet(void){
             break;
 
         case CARREAUX_FUN:{
-            TracerCarreauxFun();
-            ogl.current_carreau = (ogl.current_carreau+1)+msh.nb_carreaux;
-            glutPostRedisplay();
+            if (msh.nb_carreaux>5){
+                TracerCarreauxFun();
+                ogl.current_carreau = (ogl.current_carreau+1)+msh.nb_carreaux;
+                glutPostRedisplay();
+            }
+            else {
+                printf("### ERROR : Your mesh file doesnt contains information about tiles\n");
+
+            }
+        }
+        break;
+        case DIFFUSION:{
+            TracerDiffusion();
         }
         break;
     }

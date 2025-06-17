@@ -26,6 +26,7 @@ void Reshape(int w, int h){
 
 void Keyboard(unsigned char key, int x, int y){
     (void)x; (void)y; // to avoid warning
+    ogl.aide=0;
 
     switch (key) {
         case 'q':
@@ -110,6 +111,11 @@ void Keyboard(unsigned char key, int x, int y){
             glutPostRedisplay();
             MatriceProjection();
             break;
+        case 'D':
+            ogl.renderMode = DIFFUSION;
+            glutPostRedisplay();
+            MatriceProjection();
+            break;
         case 'a':
             ogl.current_mat=&(ogl.steel);
             glutPostRedisplay();
@@ -188,6 +194,7 @@ void Keyboard(unsigned char key, int x, int y){
 
 
 void Mouse(int32_t b, int32_t state, int32_t sx, int32_t sy) {
+    ogl.aide=0;
     if (b == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
         printf("Clic gauche\n");
         ogl.flagTransformation |= ROTATION_STATE;
