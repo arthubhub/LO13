@@ -361,7 +361,7 @@ void SetCurvature(Mesh *msh) {
         msh->curvature_v[i] = (float)(2.0 * M_PI - msh->curvature_v[i]); // curv[i] = 2 pi - curv[i]
 
         // tronquage
-        float limit = M_PI/50;
+        float limit = M_PI/20;
 
         if (msh->curvature_v[i]<-limit) msh->curvature_v[i]=-limit;
         if (msh->curvature_v[i]>limit) msh->curvature_v[i]=limit;
