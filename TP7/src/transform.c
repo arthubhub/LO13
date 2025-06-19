@@ -129,6 +129,9 @@ void MatriceVuePlan(void)
 }
 
 void MatriceVueOmbre(const float* projectionMatrix, const char* matrixName){
+
+    // O' = Tchr Tos Po Tso Tchr-1 Tg Tchr 0
+
     glLoadIdentity();
     
     // Appliquer Tchr
@@ -164,6 +167,8 @@ void MatriceVueOmbre(const float* projectionMatrix, const char* matrixName){
 
 void MatriceVueProjection(const float* projectionMatrix, const char* matrixName) {
     glLoadIdentity();
+
+    //O' = Tchr (Px/Py/Pz/Sx/Sy/Sz) Tchr-1 Tg Tchr 0  
     
     // Appliquer Tchr
     gluLookAt(ogl.obsX, ogl.obsY, ogl.obsZ,
@@ -256,12 +261,7 @@ void Display(void) {
         glPopMatrix();
         glMatrixMode(GL_MODELVIEW);
 
-
     }
 
-
-
-
-    
     ViderMemoireEcran();
 }

@@ -1,22 +1,19 @@
 #include "math_utils.h"
 #include "mesh.h"
 #include "opengl_state.h"
-// Compute squared norm of vect
+
 double NormSquare(const float vect[3]) {
     return vect[0]*vect[0] + vect[1]*vect[1] + vect[2]*vect[2];
 }
 
-// Compute Euclidean norm of vect
 double Norm(const float vect[3]) {
     return sqrt(NormSquare(vect));
 }
 
-// Compute dot product of vect1 and vect2
 double DotProduct(const float vect1[3], const float vect2[3]) {
     return vect1[0]*vect2[0] + vect1[1]*vect2[1] + vect1[2]*vect2[2];
 }
 
-// Compute normalized cross product
 void CrossProduct(const float vect1[3], const float vect2[3], float result[3]) {
     result[0] = vect1[1]*vect2[2] - vect1[2]*vect2[1];
     result[1] = vect1[2]*vect2[0] - vect1[0]*vect2[2];
@@ -29,7 +26,6 @@ void CrossProduct(const float vect1[3], const float vect2[3], float result[3]) {
     }
 }
 
-// Compute angle between (point1-point2) and (point3-point2)
 double Angle(const float point1[3], const float point2[3], const float point3[3]) {
     float v1[3], v2[3];
     for (int i = 0; i < 3; ++i) {
@@ -48,7 +44,6 @@ double Angle(const float point1[3], const float point2[3], const float point3[3]
 }
 
 
-// calculate the barrycenter of a point
 void CalculerBarycentre(int k, float *Gx, float *Gy, float *Gz) {
     int j, virt_base, real_base;
     *Gx = *Gy = *Gz = 0.0f;
@@ -68,36 +63,28 @@ float CalculerShrink(float A, float G) {
     return (1.0f - ogl.shrink) * A + ogl.shrink * G;
 }
 
-/* --------------------------------------------------------------------
- * 1) Soustraction a - b
- * -------------------------------------------------------------------- */
+
 void SubtractVectors(const float a[3], const float b[3], float out[3]) {
     out[0] = a[0] - b[0];
     out[1] = a[1] - b[1];
     out[2] = a[2] - b[2];
 }
 
-/* --------------------------------------------------------------------
- * 2) Addition a + b
- * -------------------------------------------------------------------- */
+
 void AddVectors(const float a[3], const float b[3], float out[3]) {
     out[0] = a[0] + b[0];
     out[1] = a[1] + b[1];
     out[2] = a[2] + b[2];
 }
 
-/* --------------------------------------------------------------------
- * 3) Mise à l'échelle v * s
- * -------------------------------------------------------------------- */
+
 void ScaleVector(const float v[3], float s, float out[3]) {
     out[0] = v[0] * s;
     out[1] = v[1] * s;
     out[2] = v[2] * s;
 }
 
-/* --------------------------------------------------------------------
- * 4) Normalisation (en place). Renvoie la norme initiale
- * -------------------------------------------------------------------- */
+
 double NormalizeVector(float v[3]) {
     double n = sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
     if (n > 0.0) {
@@ -108,10 +95,7 @@ double NormalizeVector(float v[3]) {
     return n;
 }
 
-/* --------------------------------------------------------------------
- * 5) Projection de v sur axis (axis peut être non unitaire).
- *    proj = ((v⋅axis) / ||axis||^2) * axis
- * -------------------------------------------------------------------- */
+/* Projection de v sur axis */
 void ProjectOnto(const float v[3], const float axis[3], float out[3]) {
     /* d = v ⋅ axis */
     double d = v[0]*axis[0] + v[1]*axis[1] + v[2]*axis[2];
@@ -128,10 +112,7 @@ void ProjectOnto(const float v[3], const float axis[3], float out[3]) {
     }
 }
 
-/* --------------------------------------------------------------------
- * 6) Composante orthogonale de v par rapport à axis :
- *    out = v - proj(v sur axis)
- * -------------------------------------------------------------------- */
+
 void PerpComponent(const float v[3], const float axis[3], float out[3]) {
     float proj[3];
     ProjectOnto(v, axis, proj);
@@ -140,10 +121,7 @@ void PerpComponent(const float v[3], const float axis[3], float out[3]) {
     out[2] = v[2] - proj[2];
 }
 
-/* --------------------------------------------------------------------
- * 7) Produit vectoriel brut (sans normalisation)
- *    result = a × b
- * -------------------------------------------------------------------- */
+
 void RawCrossProduct(const float a[3], const float b[3], float result[3]) {
     result[0] = a[1]*b[2] - a[2]*b[1];
     result[1] = a[2]*b[0] - a[0]*b[2];

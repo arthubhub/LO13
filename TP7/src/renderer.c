@@ -97,7 +97,6 @@ void SetColorFromCurvature(float cur)
         }*/
     }
 
-    // Trace systématique à chaque appel
     /*printf("[DEBUG] cur=%.6f, ratio=%.6f -> color=(R:%.3f G:%.3f B:%.3f)\n",
            cur, ratio, r, g, b);*/
 

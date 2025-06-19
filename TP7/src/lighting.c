@@ -5,10 +5,6 @@
 #include "math_utils.h"
 #include "opengl_state.h"  // Defines 'extern Opengl ogl;'
 
-/*
- * Stub implementations: paste the corresponding code from your original file
- * into these functions in mesh.c to preserve your logic.
- */
 
  void InitialiserSourceLumineuse(void){
     /*Le premier champ indique les coordonnées homogènes de la source. Par exemple une source
@@ -57,7 +53,7 @@ void InitialiserOption8_Diffusion(void){
     int diffusion;
 
 
-    diffusion = 20;
+    diffusion = 100;
 
     float norm_src = Norm(ogl.src.position);
     ogl.source_normalisee[0] = ogl.src.position[0]/norm_src;
