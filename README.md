@@ -1,8 +1,8 @@
 # Visualiseur 3D - Projet LO13
 
-**Auteur :** Arthur Bidet  
+**Auteur :** Arthur BIDET  
 **Filière :** Réseaux & Télécommunications  
-**Matière :** LO13 — Programmation et Interfaces Graphiques  
+**Matière :** LO13 — Infographie 3D : théorie et application  
 **Établissement :** Université de Technologie de Troyes (UTT)
 
 ---
