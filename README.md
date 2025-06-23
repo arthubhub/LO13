@@ -72,3 +72,26 @@ Modules principaux :
 make
 ./renderer <fichier.mesh>
 ```
+
+
+### + Exemples 
+
+  1) Affichage filaire
+     <img width="648" alt="image" src="https://github.com/user-attachments/assets/dcc199d4-197a-4ee7-9dc7-00b5c8c645a5" />
+  3) Affichage filaire avec traitement des parties cachées
+     <img width="646" alt="image" src="https://github.com/user-attachments/assets/cc2441dc-72bf-4d99-972f-479a1e42d231" />
+  5) Affichage filaire + uni
+  6) Ombrage uni
+  7) Ombrage uni + filaire
+  8) Ombrage uni sur les arrêtes
+  9) Ombrage de Phong
+  10) Ombrage de Phong + filaire
+  11) Ombrage de Phong sur les arrêtes
+  12) Repère
+  13) Plans et projections
+  14) Miroirs
+  15) Ombrage au sol
+  16) Affichage des carreaux du fichier mesh
+  17) Shrink
+  18) Lignes de diffusion
+  19) Courbure Gaussienne
